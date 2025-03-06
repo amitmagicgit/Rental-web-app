@@ -1,0 +1,74 @@
+I have a service of AWS Lambda functions that scrape Facebook groups and other websites for rental real estate. We process these listings with AI and send them to Telegram groups. Now I need a website where:
+
+Each listing can be viewed on a dedicated page.
+All listings can be browsed and filtered.
+Users can log in, subscribe (via payment), and define custom filters (via a Telegram bot) for receiving notifications.
+Database Schemas
+We have two key tables in our PostgreSQL database:
+
+1. processed_posts
+Holds the final “processed” listings that we want to show on our website. The main columns (fields) are:
+
+post_id (VARCHAR) – A unique identifier for each post.
+description (TEXT) – A short description of the property.
+price (FLOAT or VARCHAR) – The monthly rent.
+address (TEXT) – The address or street name.
+neighborhood (TEXT) – The neighborhood name.
+num_rooms (FLOAT or VARCHAR) – The number of rooms.
+size (FLOAT or VARCHAR) – The size in square meters.
+agent (VARCHAR) – Whether it’s through an agent (“yes” or “no”).
+balcony (VARCHAR) – Whether there is a balcony (“yes” or “no”).
+parking (VARCHAR) – Whether there is parking (“yes” or “no”).
+furnished (VARCHAR) – Whether it’s furnished (“yes” or “no”).
+detailed_description (TEXT) – A more detailed text describing the property.
+url (TEXT) – A link to the original post or listing.
+(Note: Some columns might be typed as TEXT in the database but effectively hold numeric or boolean data. That’s fine; we can parse them in our code.)
+
+2. telegram_subscriptions
+Holds user subscription/filter information. The main columns include:
+
+id (SERIAL) – Primary key.
+chat_id (VARCHAR) – The Telegram chat/group ID.
+target_type (VARCHAR) – e.g., “group” or “user.”
+min_price (FLOAT) – Minimum acceptable price.
+max_price (FLOAT) – Maximum acceptable price.
+min_size (FLOAT) – Minimum size in sqm.
+max_size (FLOAT) – Maximum size in sqm.
+neighborhoods (JSON or TEXT) – An array or list of neighborhood names.
+min_rooms (FLOAT) – Minimum number of rooms.
+max_rooms (FLOAT) – Maximum number of rooms.
+balcony (JSON or TEXT) – An array/list of allowed values (e.g. “yes,” “no,” “not mentioned”).
+agent (JSON or TEXT) – Same as above.
+parking (JSON or TEXT) – Same as above.
+furnished (JSON or TEXT) – Same as above.
+created_at (TIMESTAMP) – When the subscription was created.
+Website Requirements
+Public Listings Page
+
+Show all processed_posts, with the ability to filter by price, size, rooms, neighborhood, etc.
+Provide a detail page for each listing (via post_id).
+Authentication and Subscription
+
+A login system where users can sign up and pay for a subscription.
+After subscribing, users can create their own chat with our Telegram bot and define filters that match the columns in telegram_subscriptions.
+These filters determine which listings they get notified about on Telegram.
+Integration with Telegram
+
+When we send a message to a Telegram group/chat, we include a link to the listing’s detail page on this website.
+If a user clicks the link, they should see the property details from processed_posts.
+Implementation Suggestions
+
+Frontend: Could be React, Next.js, Vue, or a simpler server-rendered approach.
+Backend: Could connect directly to our PostgreSQL database to retrieve processed_posts and manage user data/subscriptions.
+Payment: Possibly integrate Stripe or PayPal for user subscriptions.
+Filtering Logic: On the website, we can replicate the filter logic from telegram_subscriptions so users see the same constraints they get in their Telegram notifications.
+Admin or Management Panel (Optional)
+
+A page to view all subscriptions, manage user info, or manually manage listings.
+Please build a working prototype of this website. It should let visitors:
+
+View a feed of listings from processed_posts.
+Click a listing to see more details.
+Sign up, pay for a subscription, and define personal filters (similar to the fields in telegram_subscriptions).
+Possibly manage their filters in a user settings page.
+Feel free to propose additional features or best practices (e.g., using JWT tokens for authentication, etc.). We want a clean, modern UI that’s also responsive for mobile users
