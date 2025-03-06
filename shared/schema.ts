@@ -2,6 +2,28 @@ import { pgTable, text, serial, integer, boolean, jsonb, timestamp, real } from 
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const NEIGHBORHOODS = [
+  "כרם התימנים",
+  "נווה צדק",
+  "פלורנטיין",
+  "הצפון הישן",
+  "הצפון החדש",
+  "בבלי",
+  "מונטיפיורי",
+  "לב העיר",
+  "נמל תל אביב",
+  "התקווה",
+  "רמת אביב",
+  "נווה אביבים"
+] as const;
+
+export const FILTER_OPTIONS = {
+  ANY: "any",
+  YES: "yes",
+  NO: "no",
+  NOT_MENTIONED: "not_mentioned"
+} as const;
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),

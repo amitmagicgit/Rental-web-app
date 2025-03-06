@@ -16,7 +16,7 @@ export function Navbar() {
     <nav className="border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/">
-          <span className="text-xl font-bold cursor-pointer">RealEstate</span>
+          <span className="text-xl font-bold cursor-pointer">דירות להשכרה</span>
         </Link>
 
         <div className="flex items-center gap-4">
@@ -30,22 +30,22 @@ export function Navbar() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard">
-                    <span className="w-full">Dashboard</span>
+                    <span className="w-full">לוח בקרה</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive"
                   onClick={() => logoutMutation.mutate()}
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                  <LogOut className="h-4 w-4 ml-2" />
+                  התנתק
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Button asChild>
               <Link href="/auth">
-                <span>Login</span>
+                <span>התחבר</span>
               </Link>
             </Button>
           )}
