@@ -7,9 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, MapPin, Ruler, BedDouble, Car, Check, X } from "lucide-react";
+import { useState } from "react";
 
 export default function ListingDetail() {
   const [, params] = useRoute("/listing/:postId");
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const { data: listing, isLoading } = useQuery<Listing>({
     queryKey: [`/api/listings/${params?.postId}`],
@@ -42,25 +44,42 @@ export default function ListingDetail() {
       <Navbar />
       <div className="container mx-auto p-4">
         <div className="max-w-4xl mx-auto">
-          {/* Images Carousel */}
+          {/* Images Gallery */}
           <div className="mb-8">
             {listing.attachments?.length ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {listing.attachments.map((imageUrl, index) => (
-                  <div key={index} className="aspect-[4/3] relative">
-                    <img
-                      src={imageUrl}
-                      alt={`Property image ${index + 1}`}
-                      className="absolute inset-0 w-full h-full object-cover rounded-lg"
-                    />
-                  </div>
-                ))}
+              <div className="space-y-4">
+                {/* Main Image */}
+                <div className="aspect-[4/3] relative rounded-lg overflow-hidden">
+                  <img
+                    src={listing.attachments[selectedImageIndex]}
+                    alt={`Property image ${selectedImageIndex + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                {/* Thumbnails */}
+                <div className="grid grid-cols-6 gap-2">
+                  {listing.attachments.map((imageUrl, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`aspect-square relative rounded-md overflow-hidden ${
+                        index === selectedImageIndex ? 'ring-2 ring-primary' : ''
+                      }`}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="h-96 bg-muted rounded-lg flex items-center justify-center mb-8">
                 <div className="text-muted-foreground text-center">
-                  <div className="text-lg">Property Image</div>
-                  <div className="text-sm">Contact agent for photos</div>
+                  <div className="text-lg">לא נמצאו תמונות</div>
+                  <div className="text-sm">צור קשר עם המתווך לקבלת תמונות</div>
                 </div>
               </div>
             )}
@@ -71,7 +90,7 @@ export default function ListingDetail() {
             <div className="md:col-span-2">
               <h1 className="text-2xl font-bold mb-4">{listing.description}</h1>
               <div className="text-3xl font-bold mb-4">
-                €{listing.price?.toLocaleString()}
+                ₪{listing.price?.toLocaleString()}
               </div>
               <div className="flex items-center gap-4 text-muted-foreground mb-6">
                 <div className="flex items-center gap-1">
@@ -80,11 +99,11 @@ export default function ListingDetail() {
                 </div>
                 <div className="flex items-center gap-1">
                   <Ruler className="h-5 w-5" />
-                  {listing.size}m²
+                  {listing.size} מ״ר
                 </div>
                 <div className="flex items-center gap-1">
                   <BedDouble className="h-5 w-5" />
-                  {listing.numRooms} rooms
+                  {listing.numRooms} חדרים
                 </div>
               </div>
             </div>
@@ -96,12 +115,12 @@ export default function ListingDetail() {
                   asChild
                 >
                   <a href={listing.url} target="_blank" rel="noopener noreferrer">
-                    View Original Post
-                    <ExternalLink className="h-4 w-4 ml-2" />
+                    צפה במודעה המקורית
+                    <ExternalLink className="h-4 w-4 mr-2" />
                   </a>
                 </Button>
                 <div className="text-sm text-muted-foreground">
-                  View the original post for contact information and more details
+                  צפה במודעה המקורית לקבלת פרטי התקשרות ומידע נוסף
                 </div>
               </CardContent>
             </Card>
@@ -115,7 +134,7 @@ export default function ListingDetail() {
               ) : (
                 <X className="h-5 w-5 text-red-500" />
               )}
-              <span>Agent</span>
+              <span>תיווך</span>
             </div>
             <div className="flex items-center gap-2">
               {listing.balcony === 'yes' ? (
@@ -123,7 +142,7 @@ export default function ListingDetail() {
               ) : (
                 <X className="h-5 w-5 text-red-500" />
               )}
-              <span>Balcony</span>
+              <span>מרפסת</span>
             </div>
             <div className="flex items-center gap-2">
               {listing.parking === 'yes' ? (
@@ -131,7 +150,7 @@ export default function ListingDetail() {
               ) : (
                 <X className="h-5 w-5 text-red-500" />
               )}
-              <span>Parking</span>
+              <span>חניה</span>
             </div>
             <div className="flex items-center gap-2">
               {listing.furnished === 'yes' ? (
@@ -139,13 +158,13 @@ export default function ListingDetail() {
               ) : (
                 <X className="h-5 w-5 text-red-500" />
               )}
-              <span>Furnished</span>
+              <span>מרוהט</span>
             </div>
           </div>
 
           {/* Detailed Description */}
           <div className="prose max-w-none">
-            <h2 className="text-xl font-semibold mb-4">Description</h2>
+            <h2 className="text-xl font-semibold mb-4">תיאור</h2>
             <p className="whitespace-pre-wrap">{listing.detailedDescription}</p>
           </div>
         </div>
