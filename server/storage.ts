@@ -1,6 +1,15 @@
-import { User, InsertUser, Listing, UserFilter, InsertUserFilter } from "@shared/schema";
+import pkg from "pg";
+const { Pool } = pkg;
+import fs from "fs";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import {
+  User,
+  InsertUser,
+  Listing,
+  UserFilter,
+  InsertUserFilter,
+} from "@shared/schema";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -10,159 +19,228 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User>;
   updateUserTelegramChat(userId: number, chatId: string): Promise<User>;
-  
+
   getListings(filters?: Partial<UserFilter>): Promise<Listing[]>;
   getListingByPostId(postId: string): Promise<Listing | undefined>;
-  
+
   getUserFilters(userId: number): Promise<UserFilter[]>;
-  createUserFilter(userId: number, filter: InsertUserFilter): Promise<UserFilter>;
-  updateUserFilter(filterId: number, filter: Partial<InsertUserFilter>): Promise<UserFilter>;
+  createUserFilter(
+    userId: number,
+    filter: InsertUserFilter,
+  ): Promise<UserFilter>;
+  updateUserFilter(
+    filterId: number,
+    filter: Partial<InsertUserFilter>,
+  ): Promise<UserFilter>;
   deleteUserFilter(filterId: number): Promise<void>;
 
   sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private listings: Map<string, Listing>;
-  private userFilters: Map<number, UserFilter>;
-  currentId: number;
+
+export class DbStorage implements IStorage {
+  private pool: Pool;
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.listings = new Map();
-    this.userFilters = new Map();
-    this.currentId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    // Use the DATABASE_URL environment variable for your connection string.
+
+    // If you're using Docker, you can use the DATABASE_URL environment variable
+    console.log(process.env.DATABASE_URL);
+    const caCert = fs.readFileSync("server/eu-central-1-bundle.pem").toString();
+    console.log("Certificate file loaded successfully.");
+    console.log("Certificate length:", caCert.length);
+    this.pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        ca: caCert,
+      },
     });
 
-    // Add some sample listings
-    this.addSampleListings();
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await this.pool.query("SELECT * FROM users WHERE id = $1", [
+      id,
+    ]);
+    return result.rows[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
+    const result = await this.pool.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username],
     );
+    return result.rows[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
-    const user: User = { 
-      ...insertUser, 
-      id, 
-      isSubscribed: false,
-      telegramChatId: null 
-    };
-    this.users.set(id, user);
-    return user;
+    const result = await this.pool.query(
+      `INSERT INTO users (username, password, is_subscribed, telegram_chat_id)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [insertUser.username, insertUser.password, false, null],
+    );
+    return result.rows[0];
   }
 
-  async updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User> {
-    const user = await this.getUser(userId);
-    if (!user) throw new Error("User not found");
-    
-    const updatedUser = { ...user, isSubscribed };
-    this.users.set(userId, updatedUser);
-    return updatedUser;
+  async updateUserSubscription(
+    userId: number,
+    isSubscribed: boolean,
+  ): Promise<User> {
+    const result = await this.pool.query(
+      `UPDATE users SET is_subscribed = $1 WHERE id = $2 RETURNING *`,
+      [isSubscribed, userId],
+    );
+    return result.rows[0];
   }
 
   async updateUserTelegramChat(userId: number, chatId: string): Promise<User> {
-    const user = await this.getUser(userId);
-    if (!user) throw new Error("User not found");
-    
-    const updatedUser = { ...user, telegramChatId: chatId };
-    this.users.set(userId, updatedUser);
-    return updatedUser;
+    const result = await this.pool.query(
+      `UPDATE users SET telegram_chat_id = $1 WHERE id = $2 RETURNING *`,
+      [chatId, userId],
+    );
+    return result.rows[0];
   }
 
   async getListings(filters?: Partial<UserFilter>): Promise<Listing[]> {
-    let listings = Array.from(this.listings.values());
-    
+    let query = "SELECT * FROM processed_posts";
+    const params: any[] = [];
+    const conditions: string[] = [];
+
     if (filters) {
-      listings = listings.filter(listing => {
-        if (filters.minPrice && listing.price && listing.price < filters.minPrice) return false;
-        if (filters.maxPrice && listing.price && listing.price > filters.maxPrice) return false;
-        if (filters.minSize && listing.size && listing.size < filters.minSize) return false;
-        if (filters.maxSize && listing.size && listing.size > filters.maxSize) return false;
-        if (filters.minRooms && listing.numRooms && listing.numRooms < filters.minRooms) return false;
-        if (filters.maxRooms && listing.numRooms && listing.numRooms > filters.maxRooms) return false;
-        if (filters.neighborhoods && !filters.neighborhoods.includes(listing.neighborhood || '')) return false;
-        if (filters.balcony && listing.balcony !== filters.balcony) return false;
-        if (filters.agent && listing.agent !== filters.agent) return false;
-        if (filters.parking && listing.parking !== filters.parking) return false;
-        if (filters.furnished && listing.furnished !== filters.furnished) return false;
-        return true;
-      });
+      if (filters.minPrice !== undefined) {
+        params.push(filters.minPrice);
+        conditions.push(`price >= $${params.length}`);
+      }
+      if (filters.maxPrice !== undefined) {
+        params.push(filters.maxPrice);
+        conditions.push(`price <= $${params.length}`);
+      }
+      if (filters.minSize !== undefined) {
+        params.push(filters.minSize);
+        conditions.push(`size >= $${params.length}`);
+      }
+      if (filters.maxSize !== undefined) {
+        params.push(filters.maxSize);
+        conditions.push(`size <= $${params.length}`);
+      }
+      if (filters.minRooms !== undefined) {
+        params.push(filters.minRooms);
+        conditions.push(`num_rooms >= $${params.length}`);
+      }
+      if (filters.maxRooms !== undefined) {
+        params.push(filters.maxRooms);
+        conditions.push(`num_rooms <= $${params.length}`);
+      }
+      if (filters.neighborhoods !== undefined) {
+        // Assuming neighborhoods is an array, we use the ANY operator.
+        params.push(filters.neighborhoods);
+        conditions.push(`neighborhood = ANY($${params.length})`);
+      }
+      if (filters.balcony !== undefined) {
+        params.push(filters.balcony);
+        conditions.push(`balcony = $${params.length}`);
+      }
+      if (filters.agent !== undefined) {
+        params.push(filters.agent);
+        conditions.push(`agent = $${params.length}`);
+      }
+      if (filters.parking !== undefined) {
+        params.push(filters.parking);
+        conditions.push(`parking = $${params.length}`);
+      }
+      if (filters.furnished !== undefined) {
+        params.push(filters.furnished);
+        conditions.push(`furnished = $${params.length}`);
+      }
     }
 
-    return listings;
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    const result = await this.pool.query(query, params);
+    return result.rows;
   }
 
   async getListingByPostId(postId: string): Promise<Listing | undefined> {
-    return this.listings.get(postId);
+    const result = await this.pool.query(
+      "SELECT * FROM processed_posts WHERE post_id = $1",
+      [postId],
+    );
+    return result.rows[0];
   }
 
   async getUserFilters(userId: number): Promise<UserFilter[]> {
-    return Array.from(this.userFilters.values()).filter(filter => filter.userId === userId);
+    const result = await this.pool.query(
+      "SELECT * FROM telegram_subscriptions WHERE user_id = $1",
+      [userId],
+    );
+    return result.rows;
   }
 
-  async createUserFilter(userId: number, filter: InsertUserFilter): Promise<UserFilter> {
-    const id = this.currentId++;
-    const userFilter: UserFilter = {
-      ...filter,
-      id,
-      userId,
-      createdAt: new Date(),
-    };
-    this.userFilters.set(id, userFilter);
-    return userFilter;
+  async createUserFilter(
+    userId: number,
+    filter: InsertUserFilter,
+  ): Promise<UserFilter> {
+    const result = await this.pool.query(
+      `INSERT INTO telegram_subscriptions 
+       (user_id, min_price, max_price, min_size, max_size, neighborhoods, min_rooms, max_rooms, balcony, agent, parking, furnished)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       RETURNING *`,
+      [
+        userId,
+        filter.minPrice,
+        filter.maxPrice,
+        filter.minSize,
+        filter.maxSize,
+        JSON.stringify(filter.neighborhoods),
+        filter.minRooms,
+        filter.maxRooms,
+        JSON.stringify(filter.balcony),
+        JSON.stringify(filter.agent),
+        JSON.stringify(filter.parking),
+        JSON.stringify(filter.furnished),
+      ],
+    );
+    return result.rows[0];
   }
 
-  async updateUserFilter(filterId: number, filter: Partial<InsertUserFilter>): Promise<UserFilter> {
-    const existingFilter = this.userFilters.get(filterId);
-    if (!existingFilter) throw new Error("Filter not found");
-
-    const updatedFilter = { ...existingFilter, ...filter };
-    this.userFilters.set(filterId, updatedFilter);
-    return updatedFilter;
+  async updateUserFilter(
+    filterId: number,
+    filter: Partial<InsertUserFilter>,
+  ): Promise<UserFilter> {
+    const keys = Object.keys(filter);
+    if (keys.length === 0) {
+      throw new Error("No filter fields provided");
+    }
+    const setClauses = keys.map((key, idx) => `${key} = $${idx + 1}`);
+    const values = keys.map((key) => {
+      if (
+        ["neighborhoods", "balcony", "agent", "parking", "furnished"].includes(
+          key,
+        )
+      ) {
+        return JSON.stringify(filter[key as keyof InsertUserFilter]);
+      }
+      return filter[key as keyof InsertUserFilter];
+    });
+    const query = `UPDATE telegram_subscriptions SET ${setClauses.join(
+      ", ",
+    )} WHERE id = $${keys.length + 1} RETURNING *`;
+    values.push(filterId);
+    const result = await this.pool.query(query, values);
+    return result.rows[0];
   }
 
   async deleteUserFilter(filterId: number): Promise<void> {
-    this.userFilters.delete(filterId);
-  }
-
-  private addSampleListings() {
-    const sampleListings: Omit<Listing, 'id'>[] = [
-      {
-        postId: "1",
-        description: "Modern 2-bedroom apartment in city center",
-        price: 1500,
-        address: "123 Main St",
-        neighborhood: "Downtown",
-        numRooms: 2,
-        size: 75,
-        agent: "yes",
-        balcony: "yes",
-        parking: "yes",
-        furnished: "yes",
-        detailedDescription: "Beautiful modern apartment with great views...",
-        url: "https://example.com/listing1",
-        createdAt: new Date(),
-      },
-      // Add more sample listings as needed
-    ];
-
-    sampleListings.forEach((listing, index) => {
-      this.listings.set(listing.postId, { ...listing, id: index + 1 });
-    });
+    await this.pool.query("DELETE FROM telegram_subscriptions WHERE id = $1", [
+      filterId,
+    ]);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DbStorage();

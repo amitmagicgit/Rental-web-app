@@ -42,12 +42,28 @@ export default function ListingDetail() {
       <Navbar />
       <div className="container mx-auto p-4">
         <div className="max-w-4xl mx-auto">
-          {/* Main Image */}
-          <div className="h-96 bg-muted rounded-lg flex items-center justify-center mb-8">
-            <div className="text-muted-foreground text-center">
-              <div className="text-lg">Property Image</div>
-              <div className="text-sm">Contact agent for photos</div>
-            </div>
+          {/* Images Carousel */}
+          <div className="mb-8">
+            {listing.attachments?.length ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {listing.attachments.map((imageUrl, index) => (
+                  <div key={index} className="aspect-[4/3] relative">
+                    <img
+                      src={imageUrl}
+                      alt={`Property image ${index + 1}`}
+                      className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-96 bg-muted rounded-lg flex items-center justify-center mb-8">
+                <div className="text-muted-foreground text-center">
+                  <div className="text-lg">Property Image</div>
+                  <div className="text-sm">Contact agent for photos</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Basic Info */}
@@ -75,7 +91,7 @@ export default function ListingDetail() {
 
             <Card>
               <CardContent className="p-6">
-                <Button 
+                <Button
                   className="w-full mb-4"
                   asChild
                 >

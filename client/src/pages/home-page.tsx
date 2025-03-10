@@ -4,12 +4,12 @@ import { Listing, NEIGHBORHOODS, FILTER_OPTIONS } from "@shared/schema";
 import { Navbar } from "@/components/layout/navbar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
+  SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,11 +28,11 @@ export default function HomePage() {
     balcony: FILTER_OPTIONS.ANY,
     parking: FILTER_OPTIONS.ANY,
     furnished: FILTER_OPTIONS.ANY,
-    agent: FILTER_OPTIONS.ANY
+    agent: FILTER_OPTIONS.ANY,
   });
 
   const { data: listings, isLoading } = useQuery<Listing[]>({
-    queryKey: ['/api/listings', filters],
+    queryKey: ["/api/listings", filters],
   });
 
   return (
@@ -47,18 +47,28 @@ export default function HomePage() {
               <div>
                 <label className="text-sm font-medium">טווח מחירים</label>
                 <div className="flex items-center gap-2">
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="מקסימום"
                     value={filters.maxPrice}
-                    onChange={(e) => setFilters(f => ({...f, maxPrice: Number(e.target.value)}))}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        maxPrice: Number(e.target.value),
+                      }))
+                    }
                   />
                   <span>-</span>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="מינימום"
                     value={filters.minPrice}
-                    onChange={(e) => setFilters(f => ({...f, minPrice: Number(e.target.value)}))}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        minPrice: Number(e.target.value),
+                      }))
+                    }
                   />
                 </div>
               </div>
@@ -66,18 +76,28 @@ export default function HomePage() {
               <div>
                 <label className="text-sm font-medium">גודל (מ״ר)</label>
                 <div className="flex items-center gap-2">
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="מקסימום"
                     value={filters.maxSize}
-                    onChange={(e) => setFilters(f => ({...f, maxSize: Number(e.target.value)}))}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        maxSize: Number(e.target.value),
+                      }))
+                    }
                   />
                   <span>-</span>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="מינימום"
                     value={filters.minSize}
-                    onChange={(e) => setFilters(f => ({...f, minSize: Number(e.target.value)}))}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        minSize: Number(e.target.value),
+                      }))
+                    }
                   />
                 </div>
               </div>
@@ -85,18 +105,28 @@ export default function HomePage() {
               <div>
                 <label className="text-sm font-medium">חדרים</label>
                 <div className="flex items-center gap-2">
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="מקסימום"
                     value={filters.maxRooms}
-                    onChange={(e) => setFilters(f => ({...f, maxRooms: Number(e.target.value)}))}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        maxRooms: Number(e.target.value),
+                      }))
+                    }
                   />
                   <span>-</span>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="מינימום"
                     value={filters.minRooms}
-                    onChange={(e) => setFilters(f => ({...f, minRooms: Number(e.target.value)}))}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        minRooms: Number(e.target.value),
+                      }))
+                    }
                   />
                 </div>
               </div>
@@ -105,20 +135,25 @@ export default function HomePage() {
                 <label className="text-sm font-medium">שכונות</label>
                 <div className="grid grid-cols-2 gap-2">
                   {NEIGHBORHOODS.map((neighborhood) => (
-                    <div key={neighborhood} className="flex items-center space-x-2">
+                    <div
+                      key={neighborhood}
+                      className="flex items-center space-x-2"
+                    >
                       <Checkbox
                         id={neighborhood}
                         checked={filters.neighborhoods.includes(neighborhood)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setFilters(f => ({
+                            setFilters((f) => ({
                               ...f,
-                              neighborhoods: [...f.neighborhoods, neighborhood]
+                              neighborhoods: [...f.neighborhoods, neighborhood],
                             }));
                           } else {
-                            setFilters(f => ({
+                            setFilters((f) => ({
                               ...f,
-                              neighborhoods: f.neighborhoods.filter(n => n !== neighborhood)
+                              neighborhoods: f.neighborhoods.filter(
+                                (n) => n !== neighborhood,
+                              ),
                             }));
                           }
                         }}
@@ -135,7 +170,9 @@ export default function HomePage() {
                 <label className="text-sm font-medium">מאפיינים</label>
                 <Select
                   value={filters.balcony}
-                  onValueChange={(value) => setFilters(f => ({...f, balcony: value}))}
+                  onValueChange={(value) =>
+                    setFilters((f) => ({ ...f, balcony: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="מרפסת" />
@@ -144,13 +181,17 @@ export default function HomePage() {
                     <SelectItem value={FILTER_OPTIONS.ANY}>הכל</SelectItem>
                     <SelectItem value={FILTER_OPTIONS.YES}>כן</SelectItem>
                     <SelectItem value={FILTER_OPTIONS.NO}>לא</SelectItem>
-                    <SelectItem value={FILTER_OPTIONS.NOT_MENTIONED}>לא צוין</SelectItem>
+                    <SelectItem value={FILTER_OPTIONS.NOT_MENTIONED}>
+                      לא צוין
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select
                   value={filters.parking}
-                  onValueChange={(value) => setFilters(f => ({...f, parking: value}))}
+                  onValueChange={(value) =>
+                    setFilters((f) => ({ ...f, parking: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="חניה" />
@@ -159,13 +200,17 @@ export default function HomePage() {
                     <SelectItem value={FILTER_OPTIONS.ANY}>הכל</SelectItem>
                     <SelectItem value={FILTER_OPTIONS.YES}>כן</SelectItem>
                     <SelectItem value={FILTER_OPTIONS.NO}>לא</SelectItem>
-                    <SelectItem value={FILTER_OPTIONS.NOT_MENTIONED}>לא צוין</SelectItem>
+                    <SelectItem value={FILTER_OPTIONS.NOT_MENTIONED}>
+                      לא צוין
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select
                   value={filters.furnished}
-                  onValueChange={(value) => setFilters(f => ({...f, furnished: value}))}
+                  onValueChange={(value) =>
+                    setFilters((f) => ({ ...f, furnished: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="מרוהט" />
@@ -174,13 +219,17 @@ export default function HomePage() {
                     <SelectItem value={FILTER_OPTIONS.ANY}>הכל</SelectItem>
                     <SelectItem value={FILTER_OPTIONS.YES}>כן</SelectItem>
                     <SelectItem value={FILTER_OPTIONS.NO}>לא</SelectItem>
-                    <SelectItem value={FILTER_OPTIONS.NOT_MENTIONED}>לא צוין</SelectItem>
+                    <SelectItem value={FILTER_OPTIONS.NOT_MENTIONED}>
+                      לא צוין
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select
                   value={filters.agent}
-                  onValueChange={(value) => setFilters(f => ({...f, agent: value}))}
+                  onValueChange={(value) =>
+                    setFilters((f) => ({ ...f, agent: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="תיווך" />
@@ -189,7 +238,9 @@ export default function HomePage() {
                     <SelectItem value={FILTER_OPTIONS.ANY}>הכל</SelectItem>
                     <SelectItem value={FILTER_OPTIONS.YES}>כן</SelectItem>
                     <SelectItem value={FILTER_OPTIONS.NO}>לא</SelectItem>
-                    <SelectItem value={FILTER_OPTIONS.NOT_MENTIONED}>לא צוין</SelectItem>
+                    <SelectItem value={FILTER_OPTIONS.NOT_MENTIONED}>
+                      לא צוין
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -200,47 +251,59 @@ export default function HomePage() {
         {/* Listings Grid */}
         <div className="md:col-span-3">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {isLoading ? (
-              Array(6).fill(0).map((_, i) => (
-                <Card key={i} className="overflow-hidden">
-                  <Skeleton className="h-48 w-full" />
-                  <CardContent className="p-4">
-                    <Skeleton className="h-4 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </CardContent>
-                </Card>
-              ))
-            ) : listings?.map((listing) => (
-              <Link key={listing.id} href={`/listing/${listing.postId}`}>
-                <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
-                  <div className="h-48 bg-muted flex items-center justify-center">
-                    <Home className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold mb-2 line-clamp-2">
-                      {listing.description}
-                    </h3>
-                    <div className="text-xl font-bold mb-2">
-                      ₪{listing.price?.toLocaleString()}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {listing.neighborhood}
+            {isLoading
+              ? Array(6)
+                  .fill(0)
+                  .map((_, i) => (
+                    <Card key={i} className="overflow-hidden">
+                      <Skeleton className="h-48 w-full" />
+                      <CardContent className="p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-4 w-1/2" />
+                      </CardContent>
+                    </Card>
+                  ))
+              : listings?.map((listing) => (
+                  <Link key={listing.id} href={`/listing/${listing.post_id}`}>
+                    <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
+                      <div className="h-48 bg-muted">
+                        {listing.attachments?.[0] ? (
+                          <img
+                            src={listing.attachments[0]}
+                            alt={listing.description}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full flex items-center justify-center">
+                            <Home className="h-12 w-12 text-muted-foreground" />
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Ruler className="h-4 w-4" />
-                        {listing.size} מ״ר
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <BedDouble className="h-4 w-4" />
-                        {listing.numRooms} חדרים
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold mb-2 line-clamp-2">
+                          {listing.description}
+                        </h3>
+                        <div className="text-xl font-bold mb-2">
+                          ₪{listing.price?.toLocaleString()}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            {listing.neighborhood}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Ruler className="h-4 w-4" />
+                            {listing.size} מ״ר
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <BedDouble className="h-4 w-4" />
+                            {listing.numRooms} חדרים
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
           </div>
         </div>
       </div>

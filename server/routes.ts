@@ -37,7 +37,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!result.success) {
       return res.status(400).json(result.error);
     }
-    const user = await storage.updateUserTelegramChat(req.user.id, result.data.chatId);
+    const user = await storage.updateUserTelegramChat(
+      req.user.id,
+      result.data.chatId,
+    );
     res.json(user);
   });
 
@@ -64,7 +67,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!result.success) {
       return res.status(400).json(result.error);
     }
-    const filter = await storage.updateUserFilter(parseInt(req.params.id), result.data);
+    const filter = await storage.updateUserFilter(
+      parseInt(req.params.id),
+      result.data,
+    );
     res.json(filter);
   });
 

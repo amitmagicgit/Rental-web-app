@@ -32,7 +32,7 @@ export const users = pgTable("users", {
   telegramChatId: text("telegram_chat_id"),
 });
 
-export const listings = pgTable("listings", {
+export const listings = pgTable("processed_posts", {
   id: serial("id").primaryKey(),
   postId: text("post_id").notNull().unique(),
   description: text("description").notNull(),
@@ -47,6 +47,7 @@ export const listings = pgTable("listings", {
   furnished: text("furnished"),
   detailedDescription: text("detailed_description"),
   url: text("url").notNull(),
+  attachments: jsonb("attachments").$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
