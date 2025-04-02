@@ -139,7 +139,8 @@ export default function UserDashboard() {
               {!user?.isSubscribed ? (
                 <div>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Subscribe to receive notifications for new listings that match your filters
+                    Subscribe to receive notifications for new listings that
+                    match your filters
                   </p>
                   <Button
                     className="w-full"
@@ -178,7 +179,9 @@ export default function UserDashboard() {
           {/* Filter Management */}
           <div className="md:col-span-2 space-y-6">
             <Card>
-              <CardHeader className="font-semibold">Create New Filter</CardHeader>
+              <CardHeader className="font-semibold">
+                Create New Filter
+              </CardHeader>
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={onSubmit} className="space-y-4">
@@ -371,16 +374,21 @@ export default function UserDashboard() {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Filter</AlertDialogTitle>
+                                  <AlertDialogTitle>
+                                    Delete Filter
+                                  </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete this filter? You will no longer
-                                    receive notifications for matching listings.
+                                    Are you sure you want to delete this filter?
+                                    You will no longer receive notifications for
+                                    matching listings.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => deleteFilterMutation.mutate(filter.id)}
+                                    onClick={() =>
+                                      deleteFilterMutation.mutate(filter.id)
+                                    }
                                   >
                                     Delete
                                   </AlertDialogAction>

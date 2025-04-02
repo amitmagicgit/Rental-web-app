@@ -1,4 +1,13 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, real } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  boolean,
+  jsonb,
+  timestamp,
+  real,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -10,18 +19,18 @@ export const NEIGHBORHOODS = [
   "הצפון החדש",
   "בבלי",
   "מונטיפיורי",
-  "לב העיר",
+  "לב תל אביב",
   "נמל תל אביב",
   "התקווה",
   "רמת אביב",
-  "נווה אביבים"
+  "נווה אביבים",
 ] as const;
 
 export const FILTER_OPTIONS = {
   ANY: "any",
   YES: "yes",
   NO: "no",
-  NOT_MENTIONED: "not_mentioned"
+  NOT_MENTIONED: "not_mentioned",
 } as const;
 
 export const users = pgTable("users", {
@@ -73,8 +82,11 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
-export const userFilterSchema = createInsertSchema(userFilters)
-  .omit({ id: true, userId: true, createdAt: true });
+export const userFilterSchema = createInsertSchema(userFilters).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+});
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;

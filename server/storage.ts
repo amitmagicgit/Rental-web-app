@@ -37,7 +37,6 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
-
 export class DbStorage implements IStorage {
   private pool: Pool;
   sessionStore: session.Store;
@@ -111,57 +110,99 @@ export class DbStorage implements IStorage {
     const conditions: string[] = [];
 
     if (filters) {
-      if (filters.minPrice !== undefined) {
-        params.push(filters.minPrice);
-        conditions.push(`price >= $${params.length}`);
+      // --- Price Filtering ---
+      {
+        // Use defaults if not provided.
+        const minPrice = filters.minPrice !== undefined ? filters.minPrice : 0;
+        const maxPrice =
+          filters.maxPrice !== undefined ? filters.maxPrice : 10000;
+        // Push min, max and the include flag.
+        params.push(minPrice);
+        const minPriceIndex = params.length;
+        params.push(maxPrice);
+        const maxPriceIndex = params.length;
+        // If includeZeroPrice is false, we want to exclude price=0.
+        // Otherwise, we include listings with price=0 regardless of the numeric range.
+        params.push(filters.includeZeroPrice === false ? false : true);
+        const includeZeroPriceIndex = params.length;
+        conditions.push(
+          `((price BETWEEN $${minPriceIndex} AND $${maxPriceIndex} AND price <> 0) OR (price = 0 AND $${includeZeroPriceIndex}::boolean = true))`,
+        );
       }
-      if (filters.maxPrice !== undefined) {
-        params.push(filters.maxPrice);
-        conditions.push(`price <= $${params.length}`);
+
+      // --- Size Filtering ---
+      {
+        const minSize = filters.minSize !== undefined ? filters.minSize : 0;
+        const maxSize = filters.maxSize !== undefined ? filters.maxSize : 500;
+        params.push(minSize);
+        const minSizeIndex = params.length;
+        params.push(maxSize);
+        const maxSizeIndex = params.length;
+        params.push(filters.includeZeroSize === false ? false : true);
+        const includeZeroSizeIndex = params.length;
+        conditions.push(
+          `((size BETWEEN $${minSizeIndex} AND $${maxSizeIndex} AND size <> 0) OR (size = 0 AND $${includeZeroSizeIndex}::boolean = true))`,
+        );
       }
-      if (filters.minSize !== undefined) {
-        params.push(filters.minSize);
-        conditions.push(`size >= $${params.length}`);
+
+      // --- Number of Rooms Filtering ---
+      {
+        const minRooms = filters.minRooms !== undefined ? filters.minRooms : 0;
+        const maxRooms = filters.maxRooms !== undefined ? filters.maxRooms : 10;
+        params.push(minRooms);
+        const minRoomsIndex = params.length;
+        params.push(maxRooms);
+        const maxRoomsIndex = params.length;
+        params.push(filters.includeZeroRooms === false ? false : true);
+        const includeZeroRoomsIndex = params.length;
+        conditions.push(
+          `((num_rooms BETWEEN $${minRoomsIndex} AND $${maxRoomsIndex} AND num_rooms <> 0) OR (num_rooms = 0 AND $${includeZeroRoomsIndex}::boolean = true))`,
+        );
       }
-      if (filters.maxSize !== undefined) {
-        params.push(filters.maxSize);
-        conditions.push(`size <= $${params.length}`);
-      }
-      if (filters.minRooms !== undefined) {
-        params.push(filters.minRooms);
-        conditions.push(`num_rooms >= $${params.length}`);
-      }
-      if (filters.maxRooms !== undefined) {
-        params.push(filters.maxRooms);
-        conditions.push(`num_rooms <= $${params.length}`);
-      }
+
+      // --- Neighborhoods ---
       if (filters.neighborhoods !== undefined) {
-        // Assuming neighborhoods is an array, we use the ANY operator.
         params.push(filters.neighborhoods);
         conditions.push(`neighborhood = ANY($${params.length})`);
       }
-      if (filters.balcony !== undefined) {
-        params.push(filters.balcony);
-        conditions.push(`balcony = $${params.length}`);
-      }
-      if (filters.agent !== undefined) {
-        params.push(filters.agent);
-        conditions.push(`agent = $${params.length}`);
-      }
-      if (filters.parking !== undefined) {
-        params.push(filters.parking);
-        conditions.push(`parking = $${params.length}`);
-      }
-      if (filters.furnished !== undefined) {
-        params.push(filters.furnished);
-        conditions.push(`furnished = $${params.length}`);
-      }
+
+      // --- Multi-choice Fields (balcony, parking, furnished, agent) ---
+      const MULTI_OPTIONS = ["yes", "no", "not mentioned"];
+
+      const addMultiChoiceFilter = (fieldName: string, filterValue: any) => {
+        if (Array.isArray(filterValue)) {
+          if (
+            filterValue.length > 0 &&
+            filterValue.length < MULTI_OPTIONS.length
+          ) {
+            params.push(filterValue);
+            conditions.push(`${fieldName} = ANY($${params.length})`);
+          }
+        } else if (filterValue !== undefined && filterValue !== "any") {
+          params.push(filterValue);
+          conditions.push(`${fieldName} = $${params.length}`);
+        }
+      };
+
+      addMultiChoiceFilter("balcony", filters.balcony);
+      addMultiChoiceFilter("parking", filters.parking);
+      addMultiChoiceFilter("furnished", filters.furnished);
+      addMultiChoiceFilter("agent", filters.agent);
     }
+
+    // Always filter by the recent two weeks.
+    conditions.push("created_at >= (NOW() - INTERVAL '2 weeks')");
+
+    //Filter for listings that are for rent.
+    conditions.push("for_rent = true");
 
     if (conditions.length > 0) {
       query += " WHERE " + conditions.join(" AND ");
     }
 
+    query += " ORDER BY created_at DESC LIMIT 100";
+
+    console.log(query, params);
     const result = await this.pool.query(query, params);
     return result.rows;
   }
@@ -182,13 +223,24 @@ export class DbStorage implements IStorage {
     return result.rows;
   }
 
+  async getTelegramSubscriptionByChatId(chatId: string): Promise<any> {
+    const result = await this.pool.query(
+      "SELECT * FROM telegram_subscriptions WHERE chat_id = $1",
+      [chatId],
+    );
+    return result.rows[0];
+  }
+
   async createUserFilter(
     userId: number,
     filter: InsertUserFilter,
   ): Promise<UserFilter> {
+    // For columns defined as text[] in the DB, pass raw arrays:
     const result = await this.pool.query(
       `INSERT INTO telegram_subscriptions 
-       (user_id, min_price, max_price, min_size, max_size, neighborhoods, min_rooms, max_rooms, balcony, agent, parking, furnished)
+         (user_id, min_price, max_price, min_size, max_size,
+          neighborhoods, min_rooms, max_rooms,
+          balcony, agent, parking, furnished)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
@@ -197,13 +249,15 @@ export class DbStorage implements IStorage {
         filter.maxPrice,
         filter.minSize,
         filter.maxSize,
-        JSON.stringify(filter.neighborhoods),
+        // Pass the raw array for neighborhoods
+        filter.neighborhoods,
         filter.minRooms,
         filter.maxRooms,
-        JSON.stringify(filter.balcony),
-        JSON.stringify(filter.agent),
-        JSON.stringify(filter.parking),
-        JSON.stringify(filter.furnished),
+        // Pass raw arrays for these fields
+        filter.balcony,
+        filter.agent,
+        filter.parking,
+        filter.furnished,
       ],
     );
     return result.rows[0];
@@ -217,22 +271,96 @@ export class DbStorage implements IStorage {
     if (keys.length === 0) {
       throw new Error("No filter fields provided");
     }
+
     const setClauses = keys.map((key, idx) => `${key} = $${idx + 1}`);
     const values = keys.map((key) => {
+      // If these columns are text[] in the DB, just pass the raw array
+      // instead of JSON.stringify
       if (
         ["neighborhoods", "balcony", "agent", "parking", "furnished"].includes(
           key,
         )
       ) {
-        return JSON.stringify(filter[key as keyof InsertUserFilter]);
+        return filter[key as keyof InsertUserFilter];
       }
       return filter[key as keyof InsertUserFilter];
     });
-    const query = `UPDATE telegram_subscriptions SET ${setClauses.join(
-      ", ",
-    )} WHERE id = $${keys.length + 1} RETURNING *`;
+
+    const query = `
+      UPDATE telegram_subscriptions
+      SET ${setClauses.join(", ")}
+      WHERE id = $${keys.length + 1}
+      RETURNING *;
+    `;
     values.push(filterId);
+
     const result = await this.pool.query(query, values);
+    return result.rows[0];
+  }
+
+  async upsertTelegramSubscription(data: {
+    chat_id: string;
+    target_type: string;
+    min_price: number;
+    max_price: number;
+    min_size: number;
+    max_size: number;
+    neighborhoods: string[];
+    min_rooms: number;
+    max_rooms: number;
+    balcony: string;
+    agent: string;
+    parking: string;
+    furnished: string;
+    include_zero_price: boolean;
+    include_zero_size: boolean;
+    include_zero_rooms: boolean;
+  }) {
+    const result = await this.pool.query(
+      `
+      INSERT INTO telegram_subscriptions (
+        chat_id, target_type, min_price, max_price, min_size, max_size,
+        neighborhoods, min_rooms, max_rooms, balcony, agent, parking, furnished, include_zero_price, include_zero_size, include_zero_rooms
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+      ON CONFLICT (chat_id, target_type)
+      DO UPDATE SET
+        min_price = EXCLUDED.min_price,
+        max_price = EXCLUDED.max_price,
+        min_size = EXCLUDED.min_size,
+        max_size = EXCLUDED.max_size,
+        neighborhoods = EXCLUDED.neighborhoods,
+        min_rooms = EXCLUDED.min_rooms,
+        max_rooms = EXCLUDED.max_rooms,
+        balcony = EXCLUDED.balcony,
+        agent = EXCLUDED.agent,
+        parking = EXCLUDED.parking,
+        furnished = EXCLUDED.furnished,
+        include_zero_price = EXCLUDED.include_zero_price,
+        include_zero_size  = EXCLUDED.include_zero_size,
+        include_zero_rooms = EXCLUDED.include_zero_rooms,
+        updated_at = NOW()
+      RETURNING *;
+      `,
+      [
+        data.chat_id,
+        data.target_type,
+        data.min_price,
+        data.max_price,
+        data.min_size,
+        data.max_size,
+        data.neighborhoods || [],
+        data.min_rooms,
+        data.max_rooms,
+        Array.isArray(data.balcony) ? data.balcony : [data.balcony],
+        Array.isArray(data.agent) ? data.agent : [data.agent],
+        Array.isArray(data.parking) ? data.parking : [data.parking],
+        Array.isArray(data.furnished) ? data.furnished : [data.furnished],
+        data.include_zero_price,
+        data.include_zero_size,
+        data.include_zero_rooms,
+      ],
+    );
     return result.rows[0];
   }
 

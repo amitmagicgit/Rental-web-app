@@ -16,10 +16,10 @@ export function Navbar() {
     <nav className="border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/">
-          <span className="text-xl font-bold cursor-pointer">דירות להשכרה</span>
+          <span className="text-xl font-bold cursor-pointer">עמוד בית</span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -49,7 +49,7 @@ export function Navbar() {
               </Link>
             </Button>
           )}
-        </div>
+        </div> */}
       </div>
     </nav>
   );

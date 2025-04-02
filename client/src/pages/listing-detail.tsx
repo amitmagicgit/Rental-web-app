@@ -1,17 +1,55 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Listing } from "@shared/schema";
-import { Navbar } from "@/components/layout/navbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, MapPin, Ruler, BedDouble, Car, Check, X } from "lucide-react";
-import { useState } from "react";
+import {
+  ExternalLink,
+  MapPin,
+  Ruler,
+  BedDouble,
+  Check,
+  X,
+  Clock,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+
+// Shared helper to convert created_at to a time-ago string.
+function timeAgo(createdAt: string) {
+  const date = new Date(createdAt);
+  const diffMs = Date.now() - date.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  if (diffHours < 1) {
+    return "בשעה האחרונה";
+  } else if (diffHours < 24) {
+    return `לפני ${Math.floor(diffHours)} שעות`;
+  } else {
+    return `לפני ${Math.floor(diffHours / 24)} ימים`;
+  }
+}
 
 export default function ListingDetail() {
   const [, params] = useRoute("/listing/:postId");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [backText, setBackText] = useState("חזרה לחיפוש");
+
+  // Determine if history exists (if not, we'll navigate to the root).
+  useEffect(() => {
+    if (window.history.length <= 2 || document.referrer === "") {
+      setBackText("חפשו עוד דירות");
+    } else {
+      setBackText("חזרה לחיפוש");
+    }
+  }, []);
+
+  const handleBack = () => {
+    if (window.history.length <= 2 || document.referrer === "") {
+      window.location.href = "/";
+    } else {
+      window.history.back();
+    }
+  };
 
   const { data: listing, isLoading } = useQuery<Listing>({
     queryKey: [`/api/listings/${params?.postId}`],
@@ -20,7 +58,6 @@ export default function ListingDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="container mx-auto p-4">
           <div className="max-w-4xl mx-auto space-y-8">
             <Skeleton className="h-96 w-full rounded-lg" />
@@ -39,133 +76,177 @@ export default function ListingDetail() {
     return <div>Listing not found</div>;
   }
 
+  const hasAttachments = listing.attachments && listing.attachments.length > 0;
+  const mainImageIndex = hasAttachments
+    ? listing.source_platform === "facebook" &&
+      selectedImageIndex === 0 &&
+      listing.attachments[1]
+      ? 1
+      : selectedImageIndex
+    : 0;
+
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto p-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Images Gallery */}
-          <div className="mb-8">
-            {listing.attachments?.length ? (
-              <div className="space-y-4">
-                {/* Main Image */}
-                <div className="aspect-[4/3] relative rounded-lg overflow-hidden">
-                  <img
-                    src={listing.attachments[selectedImageIndex]}
-                    alt={`Property image ${selectedImageIndex + 1}`}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                </div>
-                {/* Thumbnails */}
-                <div className="grid grid-cols-6 gap-2">
-                  {listing.attachments.map((imageUrl, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImageIndex(index)}
-                      className={`aspect-square relative rounded-md overflow-hidden ${
-                        index === selectedImageIndex ? 'ring-2 ring-primary' : ''
-                      }`}
-                    >
-                      <img
-                        src={imageUrl}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
+      <div className="container mx-auto p-12 space-y-8">
+        {/* Back Button */}
+        <Button onClick={handleBack} className="mb-4">
+          {backText}
+        </Button>
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Left Column: Details */}
+          <div className="w-full md:w-1/2 flex flex-col space-y-4">
+            {/* Title */}
+            <h1 className="text-2xl font-bold">{listing.description}</h1>
+            {/* Price */}
+            <div className="text-3xl font-bold text-primary">
+              ₪
+              {Number(listing.price).toLocaleString(undefined, {
+                maximumFractionDigits: 0,
+              })}
+            </div>
+            {/* Address, Size, Rooms, and Timing */}
+            <div className="flex flex-wrap gap-4 pt-6 text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <MapPin className="h-5 w-5" />
+                <span>{listing.neighborhood}</span>
               </div>
-            ) : (
-              <div className="h-96 bg-muted rounded-lg flex items-center justify-center mb-8">
-                <div className="text-muted-foreground text-center">
-                  <div className="text-lg">לא נמצאו תמונות</div>
-                  <div className="text-sm">צור קשר עם המתווך לקבלת תמונות</div>
+              <div className="flex items-center gap-1">
+                <Ruler className="h-5 w-5" />
+                <span>
+                  {Number(listing.size).toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}{" "}
+                  מ״ר
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <BedDouble className="h-5 w-5" />
+                <span>
+                  {Number(listing.num_rooms).toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}{" "}
+                  חדרים
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="h-5 w-5" />
+                <span>{timeAgo(listing.created_at)}</span>
+              </div>
+            </div>
+            {/* Detailed Description */}
+            <div className="prose max-w-none border-t pt-4">
+              <h2 className="text-xl font-semibold mb-2">תיאור</h2>
+              <p className="whitespace-pre-wrap">
+                {listing.detailed_description}
+              </p>
+            </div>
+            {/* Features */}
+            <div className="grid grid-cols-2 gap-2 border-t pb-5 border-b pt-4">
+              {[
+                { label: "תיווך", value: listing.agent },
+                { label: "מרפסת", value: listing.balcony },
+                { label: "חניה", value: listing.parking },
+                { label: "מרוהט", value: listing.furnished },
+              ].map((feature, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  {feature.value === "yes" ? (
+                    <Check className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <X className="h-5 w-5 text-red-500" />
+                  )}
+                  <span>{feature.label}</span>
                 </div>
+              ))}
+            </div>
+            {/* External Link Card */}
+            <div className="flex justify-center">
+              <Card className="w-full md:w-1/2 h-fit relative">
+                <CardContent className="p-6 flex flex-col">
+                  <Button className="w-full mb-4" asChild>
+                    <a
+                      href={listing.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      צפה במודעה המקורית
+                      {listing.source_platform === "facebook" ? (
+                        <img
+                          src="/facebook-logo.png"
+                          alt="Facebook Logo"
+                          className="w-8 h-8 rounded-full"
+                        />
+                      ) : listing.source_platform === "yad2" ? (
+                        <img
+                          src="/yad2-logo.jpg"
+                          alt="Yad2 Logo"
+                          className="w-8 h-8 rounded-full"
+                        />
+                      ) : null}
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Right Column: Images */}
+          <div className="w-full md:w-1/2 space-y-4">
+            {hasAttachments ? (
+              <>
+                <div className="w-full aspect-[4/3] relative rounded-lg overflow-hidden shadow-md">
+                  <img
+                    src={listing.attachments[mainImageIndex]}
+                    alt={`Property image ${mainImageIndex + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                  <div className="absolute top-2 left-2">
+                    {listing.source_platform === "facebook" ? (
+                      <img
+                        src="/facebook-logo.png"
+                        alt="Facebook Logo"
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : listing.source_platform === "yad2" ? (
+                      <img
+                        src="/yad2-logo.jpg"
+                        alt="Yad2 Logo"
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : null}
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                  {listing.attachments.map((imageUrl, index) => {
+                    // Skip the first attachment for Facebook source.
+                    if (listing.source_platform === "facebook" && index === 0)
+                      return null;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImageIndex(index)}
+                        className={`relative rounded-md overflow-hidden border-2 border-primary ${
+                          index === selectedImageIndex
+                            ? "border-primary"
+                            : "border-transparent"
+                        }`}
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={`Thumbnail ${index + 1}`}
+                          className="w-full h-20 object-cover"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="w-full aspect-[4/3] flex items-center justify-center bg-gray-200 rounded-lg">
+                <span className="text-muted-foreground">
+                  No images available
+                </span>
               </div>
             )}
-          </div>
-
-          {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div className="md:col-span-2">
-              <h1 className="text-2xl font-bold mb-4">{listing.description}</h1>
-              <div className="text-3xl font-bold mb-4">
-                ₪{listing.price?.toLocaleString()}
-              </div>
-              <div className="flex items-center gap-4 text-muted-foreground mb-6">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-5 w-5" />
-                  {listing.neighborhood}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Ruler className="h-5 w-5" />
-                  {listing.size} מ״ר
-                </div>
-                <div className="flex items-center gap-1">
-                  <BedDouble className="h-5 w-5" />
-                  {listing.numRooms} חדרים
-                </div>
-              </div>
-            </div>
-
-            <Card>
-              <CardContent className="p-6">
-                <Button
-                  className="w-full mb-4"
-                  asChild
-                >
-                  <a href={listing.url} target="_blank" rel="noopener noreferrer">
-                    צפה במודעה המקורית
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                  </a>
-                </Button>
-                <div className="text-sm text-muted-foreground">
-                  צפה במודעה המקורית לקבלת פרטי התקשרות ומידע נוסף
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Features */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="flex items-center gap-2">
-              {listing.agent === 'yes' ? (
-                <Check className="h-5 w-5 text-green-500" />
-              ) : (
-                <X className="h-5 w-5 text-red-500" />
-              )}
-              <span>תיווך</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {listing.balcony === 'yes' ? (
-                <Check className="h-5 w-5 text-green-500" />
-              ) : (
-                <X className="h-5 w-5 text-red-500" />
-              )}
-              <span>מרפסת</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {listing.parking === 'yes' ? (
-                <Check className="h-5 w-5 text-green-500" />
-              ) : (
-                <X className="h-5 w-5 text-red-500" />
-              )}
-              <span>חניה</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {listing.furnished === 'yes' ? (
-                <Check className="h-5 w-5 text-green-500" />
-              ) : (
-                <X className="h-5 w-5 text-red-500" />
-              )}
-              <span>מרוהט</span>
-            </div>
-          </div>
-
-          {/* Detailed Description */}
-          <div className="prose max-w-none">
-            <h2 className="text-xl font-semibold mb-4">תיאור</h2>
-            <p className="whitespace-pre-wrap">{listing.detailedDescription}</p>
           </div>
         </div>
       </div>

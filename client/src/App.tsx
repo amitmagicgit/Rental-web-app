@@ -9,6 +9,9 @@ import AuthPage from "@/pages/auth-page";
 import HomePage from "@/pages/home-page";
 import ListingDetail from "@/pages/listing-detail";
 import UserDashboard from "@/pages/user-dashboard";
+import PrivateSubscriptionPage from "@/pages/PrivateSubscriptionPage";
+import LandingPage from "@/pages/LandingPage";
+import Header from "@/components/layout/Header";
 
 function Router() {
   return (
@@ -16,7 +19,12 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/listing/:postId" component={ListingDetail} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/LandingPage" component={LandingPage} />
       <ProtectedRoute path="/dashboard" component={UserDashboard} />
+      <Route
+        path="/dashboard/private-subscription"
+        component={PrivateSubscriptionPage}
+      />
       <Route component={NotFound} />
     </Switch>
   );
@@ -24,12 +32,15 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router />
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </div>
   );
 }
 
