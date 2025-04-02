@@ -62,15 +62,38 @@ class House implements Particle {
     ctx.translate(this.x, this.y);
     ctx.rotate(this.rotation);
 
+    // Draw house base (square)
     ctx.beginPath();
     ctx.moveTo(this.housePoints[0].x, this.housePoints[0].y);
-    for (let i = 1; i < this.housePoints.length; i++) {
-      ctx.lineTo(this.housePoints[i].x, this.housePoints[i].y);
-    }
+    ctx.lineTo(this.housePoints[1].x, this.housePoints[1].y);
+    ctx.lineTo(this.housePoints[3].x, this.housePoints[3].y);
+    ctx.lineTo(this.housePoints[4].x, this.housePoints[4].y);
     ctx.closePath();
     ctx.strokeStyle = this.color;
     ctx.lineWidth = 2;
     ctx.stroke();
+
+    // Draw roof (triangle)
+    ctx.beginPath();
+    ctx.moveTo(this.housePoints[1].x, this.housePoints[1].y);
+    ctx.lineTo(this.housePoints[2].x, this.housePoints[2].y);
+    ctx.lineTo(this.housePoints[3].x, this.housePoints[3].y);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Add windows
+    const windowSize = 10 * this.size;
+    ctx.fillStyle = this.color.replace('0.5', '0.2');
+    // Left window
+    ctx.fillRect(-windowSize * 1.5, windowSize/2, windowSize, windowSize);
+    // Right window
+    ctx.fillRect(windowSize * 0.5, windowSize/2, windowSize, windowSize);
+
+    // Add a door
+    const doorWidth = windowSize * 0.8;
+    const doorHeight = windowSize * 1.5;
+    ctx.fillStyle = this.color.replace('0.5', '0.2');
+    ctx.fillRect(-doorWidth/2, this.housePoints[0].y - doorHeight, doorWidth, doorHeight);
 
     ctx.restore();
   }
@@ -141,11 +164,11 @@ class Person implements Particle {
 function createHousePoints(x: number, y: number, size: number) {
   const baseSize = size * 30;
   return [
-    { x: x - baseSize * 0.7, y: y + baseSize },
+    { x: x - baseSize * 0.7, y: y + baseSize * 1.2 },
     { x: x - baseSize * 0.7, y: y },
     { x: x, y: y - baseSize * 0.7 },
     { x: x + baseSize * 0.7, y: y },
-    { x: x + baseSize * 0.7, y: y + baseSize },
+    { x: x + baseSize * 0.7, y: y + baseSize * 1.2 },
   ];
 }
 
