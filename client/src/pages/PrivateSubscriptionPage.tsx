@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { NEIGHBORHOODS } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { NetworkAnimation } from "@/components/NetworkAnimation";
 
 const MULTI_OPTIONS = ["yes", "no", "not mentioned"];
 
@@ -228,8 +229,14 @@ function PrivateSubscriptionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className="flex-grow flex items-center justify-center p-4">
+    <div className="min-h-screen bg-transparent relative">
+      <NetworkAnimation 
+        desktopHouses={8}
+        desktopPeople={8}
+        mobileHouses={5}
+        mobilePeople={5}
+      />
+      <main className="flex-grow flex items-center justify-center p-4 relative z-10">
         <Card className="w-full max-w-lg">
           <CardHeader>
             <h2 className="text-2xl font-bold">בחר פילטרים לבוט האישי</h2>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Home, MapPin, Ruler, BedDouble, Clock } from "lucide-react";
 import FilterSidebar from "@/components/layout/sidefilter";
+import { NetworkAnimation } from "@/components/NetworkAnimation";
 
 // Multi-choice options for query building
 const MULTI_OPTIONS = ["yes", "no", "not mentioned"];
@@ -160,8 +161,14 @@ export default function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="min-h-screen bg-transparent relative">
+      <NetworkAnimation 
+        desktopHouses={10}
+        desktopPeople={10}
+        mobileHouses={7}
+        mobilePeople={7}
+      />
+      <div className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
         {/* Filters Sidebar */}
         <div className="md:col-span-1 ">
           <FilterSidebar onChange={setFilters} initialFilters={filters} />

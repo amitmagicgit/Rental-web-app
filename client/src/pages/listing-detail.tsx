@@ -14,6 +14,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { NetworkAnimation } from "@/components/NetworkAnimation";
 
 // Shared helper to convert created_at to a time-ago string.
 function timeAgo(createdAt: string) {
@@ -87,6 +88,12 @@ export default function ListingDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <NetworkAnimation 
+        desktopHouses={6}
+        desktopPeople={6}
+        mobileHouses={4}
+        mobilePeople={4}
+      />
       <div className="container mx-auto p-12 space-y-8">
         {/* Back Button */}
         <Button onClick={handleBack} className="mb-4">

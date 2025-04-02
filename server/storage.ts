@@ -10,6 +10,9 @@ import {
   UserFilter,
   InsertUserFilter,
 } from "@shared/schema";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const MemoryStore = createMemoryStore(session);
 
@@ -45,8 +48,8 @@ export class DbStorage implements IStorage {
     // Use the DATABASE_URL environment variable for your connection string.
 
     // If you're using Docker, you can use the DATABASE_URL environment variable
-    console.log(process.env.DATABASE_URL);
     const caCert = fs.readFileSync("server/eu-central-1-bundle.pem").toString();
+    console.log(process.env.DATABASE_URL);
     console.log("Certificate file loaded successfully.");
     console.log("Certificate length:", caCert.length);
     this.pool = new Pool({
