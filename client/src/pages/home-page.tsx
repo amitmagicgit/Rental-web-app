@@ -162,11 +162,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-transparent relative">
-      <NetworkAnimation 
-        desktopHouses={10}
-        desktopPeople={10}
-        mobileHouses={7}
-        mobilePeople={7}
+      <NetworkAnimation
+        desktopHouses={7}
+        desktopPeople={7}
+        mobileHouses={3}
+        mobilePeople={5}
       />
       <div className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
         {/* Filters Sidebar */}
