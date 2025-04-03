@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Home, MapPin, Ruler, BedDouble, Clock } from "lucide-react";
 import FilterSidebar from "@/components/layout/sidefilter";
-import { NetworkAnimation } from "@/components/NetworkAnimation";
 
 // Multi-choice options for query building
 const MULTI_OPTIONS = ["yes", "no", "not mentioned"];
@@ -161,136 +160,139 @@ export default function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-transparent relative">
-      <NetworkAnimation
-        desktopHouses={7}
-        desktopPeople={7}
-        mobileHouses={3}
-        mobilePeople={5}
-      />
-      <div className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
-        {/* Filters Sidebar */}
-        <div className="md:col-span-1 ">
-          <FilterSidebar onChange={setFilters} initialFilters={filters} />
-        </div>
+    <div className="min-h-screen bg-background ">
+      <div className="container mx-auto p-4 pt-24">
+        <h1 className="text-2xl md:text-3xl font-bold text-center mb-14 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+          דירות להשכרה בתל אביב
+        </h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Filters Sidebar */}
+          <div className="md:col-span-1">
+            <h2 className="text-lg md:text-xl font-semibold mb-4 text-center md:text-start text-primary">
+              הגדירו פילטרים ומצאו את הדירה שלכם
+            </h2>
+            <FilterSidebar onChange={setFilters} initialFilters={filters} />
+          </div>
 
-        {/* Listings Grid */}
-        <div className="md:col-span-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {isLoading
-              ? Array(6)
-                  .fill(0)
-                  .map((_, i) => (
-                    <Card key={i} className="overflow-hidden">
-                      <Skeleton className="h-48 w-full" />
-                      <CardContent className="p-4">
-                        <Skeleton className="h-4 w-3/4 mb-2" />
-                        <Skeleton className="h-4 w-1/2" />
-                      </CardContent>
-                    </Card>
-                  ))
-              : listings?.map((listing: Listing) => (
-                  <Link key={listing.id} href={`/listing/${listing.post_id}`}>
-                    <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
-                      <div className="relative h-48 bg-muted">
-                        {listing.attachments?.[0] ? (
-                          <img
-                            src={
-                              listing.source_platform === "facebook" &&
-                              listing.attachments[1]
-                                ? listing.attachments[1]
-                                : listing.attachments[0]
-                            }
-                            alt={listing.description}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-full flex items-center justify-center">
-                            <Home className="h-12 w-12 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="absolute top-2 left-2">
-                          {listing.source_platform === "facebook" ? (
+          {/* Listings Grid */}
+          <div className="md:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {isLoading
+                ? Array(6)
+                    .fill(0)
+                    .map((_, i) => (
+                      <Card key={i} className="overflow-hidden">
+                        <Skeleton className="h-48 w-full" />
+                        <CardContent className="p-4">
+                          <Skeleton className="h-4 w-3/4 mb-2" />
+                          <Skeleton className="h-4 w-1/2" />
+                        </CardContent>
+                      </Card>
+                    ))
+                : listings?.map((listing: Listing) => (
+                    <Link key={listing.id} href={`/listing/${listing.post_id}`}>
+                      <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
+                        <div className="relative h-48 bg-muted">
+                          {listing.attachments?.[0] ? (
                             <img
-                              src="/facebook-logo.png"
-                              alt="Facebook Logo"
-                              className="w-8 h-8 rounded-full"
+                              src={
+                                listing.source_platform === "facebook" &&
+                                listing.attachments[1]
+                                  ? listing.attachments[1]
+                                  : listing.attachments[0]
+                              }
+                              alt={listing.description}
+                              className="w-full h-full object-cover"
                             />
-                          ) : listing.source_platform === "yad2" ? (
-                            <img
-                              src="/yad2-logo.jpg"
-                              alt="Yad2 Logo"
-                              className="w-8 h-8 rounded-full"
-                            />
-                          ) : null}
-                        </div>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-2 line-clamp-2">
-                          {listing.description}
-                        </h3>
-                        <div className="text-xl font-bold mb-4">
-                          <div>
-                            ₪
-                            {Number(listing.price).toLocaleString(undefined, {
-                              maximumFractionDigits: 0,
-                            })}
-                            {listing.street &&
-                              listing.street !== "לא צוין" &&
-                              listing.street !== "not mentioned" && (
-                                <span className="ml-2 text-sm mr-2">
-                                  {listing.street}
-                                </span>
-                              )}
-                            {listing.house &&
-                              listing.house !== "לא צוין" &&
-                              listing.house !== "not mentioned" && (
-                                <span className="ml-2 text-sm">
-                                  {listing.house}
-                                </span>
-                              )}
+                          ) : (
+                            <div className="h-full flex items-center justify-center">
+                              <Home className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute top-2 left-2">
+                            {listing.source_platform === "facebook" ? (
+                              <img
+                                src="/facebook-logo.png"
+                                alt="Facebook Logo"
+                                className="w-8 h-8 rounded-full"
+                              />
+                            ) : listing.source_platform === "yad2" ? (
+                              <img
+                                src="/yad2-logo.jpg"
+                                alt="Yad2 Logo"
+                                className="w-8 h-8 rounded-full"
+                              />
+                            ) : null}
                           </div>
                         </div>
-                        <div className="w-full bg-white rounded-md shadow-sm py-3 flex items-center justify-between">
-                          <div className="flex-1 flex flex-col items-center px-1 text-center">
-                            <MapPin className="h-5 w-5 text-primary" />
-                            <span className="text-sm font-medium text-gray-700">
-                              {listing.neighborhood}
-                            </span>
-                          </div>
-                          <div className="w-px h-8 bg-gray-300 mx-2" />
-                          <div className="flex-1 flex flex-col items-center px-1 text-center">
-                            <Ruler className="h-5 w-5 text-primary" />
-                            <span className="text-sm font-medium text-gray-700">
-                              {Number(listing.size).toLocaleString(undefined, {
+                        <CardContent className="p-4">
+                          <h3 className="font-semibold mb-2 line-clamp-2">
+                            {listing.description}
+                          </h3>
+                          <div className="text-xl font-bold mb-4">
+                            <div>
+                              ₪
+                              {Number(listing.price).toLocaleString(undefined, {
                                 maximumFractionDigits: 0,
-                              })}{" "}
-                              מ״ר
-                            </span>
+                              })}
+                              {listing.street &&
+                                listing.street !== "לא צוין" &&
+                                listing.street !== "not mentioned" && (
+                                  <span className="ml-2 text-sm mr-2">
+                                    {listing.street}
+                                  </span>
+                                )}
+                              {listing.house &&
+                                listing.house !== "לא צוין" &&
+                                listing.house !== "not mentioned" && (
+                                  <span className="ml-2 text-sm">
+                                    {listing.house}
+                                  </span>
+                                )}
+                            </div>
                           </div>
-                          <div className="w-px h-8 bg-gray-300 mx-2" />
-                          <div className="flex-1 flex flex-col items-center px-1 text-center">
-                            <BedDouble className="h-5 w-5 text-primary" />
-                            <span className="text-sm font-medium text-gray-700">
-                              {Number(listing.num_rooms).toLocaleString(
-                                undefined,
-                                { maximumFractionDigits: 0 },
-                              )}{" "}
-                              חדרים
-                            </span>
+                          <div className="w-full bg-white rounded-md shadow-sm py-3 flex items-center justify-between">
+                            <div className="flex-1 flex flex-col items-center px-1 text-center">
+                              <MapPin className="h-5 w-5 text-primary" />
+                              <span className="text-sm font-medium text-gray-700">
+                                {listing.neighborhood}
+                              </span>
+                            </div>
+                            <div className="w-px h-8 bg-gray-300 mx-2" />
+                            <div className="flex-1 flex flex-col items-center px-1 text-center">
+                              <Ruler className="h-5 w-5 text-primary" />
+                              <span className="text-sm font-medium text-gray-700">
+                                {Number(listing.size).toLocaleString(undefined, {
+                                  maximumFractionDigits: 0,
+                                })}{" "}
+                                מ״ר
+                              </span>
+                            </div>
+                            <div className="w-px h-8 bg-gray-300 mx-2" />
+                            <div className="flex-1 flex flex-col items-center px-1 text-center">
+                              <BedDouble className="h-5 w-5 text-primary" />
+                              <span className="text-sm font-medium text-gray-700">
+                                {Number(listing.num_rooms).toLocaleString(
+                                  undefined,
+                                  { maximumFractionDigits: 0 },
+                                )}{" "}
+                                חדרים
+                              </span>
+                            </div>
+                            <div className="w-px h-8 bg-gray-300 mx-2" />
+                            <div className="flex-1 flex flex-col items-center px-1 text-center">
+                              <Clock className="h-5 w-5 text-primary" />
+                              <span className="text-sm font-medium text-gray-700">
+                                {timeAgo(listing.created_at)}
+                              </span>
+                            </div>
                           </div>
-                          <div className="w-px h-8 bg-gray-300 mx-2" />
-                          <div className="flex-1 flex flex-col items-center px-1 text-center">
-                            <Clock className="h-5 w-5 text-primary" />
-                            <span className="text-sm font-medium text-gray-700">
-                              {timeAgo(listing.created_at)}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+            </div>
           </div>
         </div>
       </div>

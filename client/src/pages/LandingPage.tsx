@@ -163,7 +163,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <motion.h1
-              className="text-5xl md:text-6xl font-bold mb-14 mt-20 md:mt-44   bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent"
+              className="text-5xl md:text-6xl font-bold mb-14 mt-20 md:mt-44 bg-gradient-to-r from-primary via-primary/60 to-primary bg-clip-text text-transparent"
               animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
@@ -213,7 +213,7 @@ export default function LandingPage() {
       {/* Info Section */}
       <section
         id="info"
-        className="h-screen snap-start snap-always flex items-start pt-10 md:pt-24 relative"
+        className="h-screen snap-start snap-always flex items-start pt-28 md:pt-44 relative"
       >
         <div className="container mx-auto px-4">
           <motion.div
@@ -223,7 +223,7 @@ export default function LandingPage() {
             transition={{ delay: 0.4, duration: 0.6 }}
           >
             <motion.h2
-              className="text-2xl md:text-4xl font-bold mb-4 md:mb-14 text-center bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent"
+              className="text-2xl md:text-4xl font-bold mb-4 md:mb-14 text-center bg-gradient-to-r from-primary via-primary/60 to-primary bg-clip-text text-transparent"
               animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
@@ -245,7 +245,7 @@ export default function LandingPage() {
                 ומתריעים בכל פעם שיש דירה חדשה בשוק
               </motion.p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {[
                   {
                     icon: "🔍",
@@ -265,7 +265,7 @@ export default function LandingPage() {
                 ].map((item, index) => (
                   <motion.div
                     key={index}
-                    className="group bg-background/5 backdrop-blur-[2px] rounded-xl p-4 flex flex-col items-center gap-2 border border-primary/10 hover:border-primary/30 hover:bg-background/10 transition-all duration-300"
+                    className="group bg-background/5 backdrop-blur-[2px] rounded-xl p-2 md:p-4 flex flex-col items-center gap-1 md:gap-2 border border-primary/10 hover:border-primary/30 hover:bg-background/10 transition-all duration-300"
                     whileHover={{ y: -5, scale: 1.02 }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -283,14 +283,14 @@ export default function LandingPage() {
                       }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <span className="text-3xl transform inline-block">
+                      <span className="text-2xl md:text-3xl transform inline-block">
                         {item.icon}
                       </span>
                     </motion.div>
-                    <span className="text-base md:text-lg font-medium text-center">
+                    <span className="text-sm md:text-base font-medium text-center">
                       {item.text}
                     </span>
-                    <span className="text-xs md:text-sm text-muted-foreground text-center">
+                    <span className="text-xs text-muted-foreground text-center">
                       {item.description}
                     </span>
                   </motion.div>
@@ -327,7 +327,7 @@ export default function LandingPage() {
       {/* Personal Bot Section */}
       <section
         id="bot"
-        className="h-screen snap-start snap-always flex items-start pt-10 md:pt-24 relative"
+        className="h-screen snap-start snap-always flex items-start pt-28 md:pt-44 relative"
       >
         <div className="container mx-auto px-4">
           <motion.div
@@ -337,11 +337,11 @@ export default function LandingPage() {
             transition={{ delay: 0.4, duration: 0.6 }}
           >
             <motion.h2
-              className="text-2xl md:text-4xl font-bold mb-4 text-center bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent"
+              className="text-2xl md:text-4xl font-bold mb-4 md:mb-14 text-center bg-gradient-to-r from-primary via-primary/60 to-primary bg-clip-text text-transparent"
               animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
-              <div className="flex items-center justify-center gap-2 md:mb-14">
+              <div className="flex items-center justify-center gap-2">
                 <Bot className="w-6 h-6 md:w-7 md:h-7" />
                 בוט אישי שעובד בשבילכם 24/7
               </div>
@@ -362,7 +362,7 @@ export default function LandingPage() {
                 חדשות שמתאימות בדיוק לדרישות שלכם
               </motion.p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {[
                   {
                     icon: "🔍",
@@ -382,7 +382,7 @@ export default function LandingPage() {
                 ].map((item, index) => (
                   <motion.div
                     key={index}
-                    className="group bg-background/5 backdrop-blur-[2px] rounded-xl p-4 flex flex-col items-center gap-2 border border-primary/10 hover:border-primary/30 hover:bg-background/10 transition-all duration-300"
+                    className="group bg-background/5 backdrop-blur-[2px] rounded-xl p-2 md:p-4 flex flex-col items-center gap-1 md:gap-2 border border-primary/10 hover:border-primary/30 hover:bg-background/10 transition-all duration-300"
                     whileHover={{ y: -5, scale: 1.02 }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -400,14 +400,14 @@ export default function LandingPage() {
                       }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <span className="text-3xl transform inline-block">
+                      <span className="text-2xl md:text-3xl transform inline-block">
                         {item.icon}
                       </span>
                     </motion.div>
-                    <span className="text-base md:text-lg font-medium text-center">
+                    <span className="text-sm md:text-base font-medium text-center">
                       {item.text}
                     </span>
-                    <span className="text-xs md:text-sm text-muted-foreground text-center">
+                    <span className="text-xs text-muted-foreground text-center">
                       {item.description}
                     </span>
                   </motion.div>
@@ -459,7 +459,7 @@ export default function LandingPage() {
             transition={{ delay: 0.4, duration: 0.6 }}
           >
             <motion.h2
-              className="text-2xl md:text-5xl font-bold mb-4 md:mb-8 text-center bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent"
+              className="text-2xl md:text-5xl font-bold mb-4 md:mb-8 text-center bg-gradient-to-r from-primary via-primary/60 to-primary bg-clip-text text-transparent"
               animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
@@ -555,7 +555,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
           >
             <div className="max-w-xl mx-auto">
-              <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+              <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-primary via-primary/60 to-primary bg-clip-text text-transparent">
                 צור קשר
               </h2>
               <motion.form
