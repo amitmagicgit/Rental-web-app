@@ -11,18 +11,23 @@ export default function Header() {
 
   return (
     <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl">
-      <div className={`${isMenuOpen ? 'bg-transparent' : 'bg-black/20 backdrop-blur-md'} rounded-full border border-white/10 shadow-lg transition-colors duration-300`}>
+      <div
+        className={`${isMenuOpen ? "bg-transparent" : "bg-black/20 backdrop-blur-md"} rounded-full border border-white/10 shadow-lg transition-colors duration-300`}
+      >
         <div className="flex justify-between items-center h-14 px-6">
           {/* Logo */}
           <Link href="/landingpage">
-            <div className="flex items-center cursor-pointer" onClick={handleLinkClick}>
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={handleLinkClick}
+            >
               <img
                 src="/logo.jpeg"
-                alt="לוגו"  
+                alt="לוגו"
                 className="h-8 w-8 mr-2 rounded-full border-2 border-primary/20"
               />
               <span className="px-2 text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                The Finder 
+                The Finder
               </span>
             </div>
           </Link>
@@ -30,13 +35,13 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center">
             <div className="bg-black/20 backdrop-blur-sm rounded-full p-1.5 flex gap-1">
-              <Link href="/">
+              <Link href="/HomePage">
                 <a className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 transition-colors text-white/70 hover:text-white">
                   <Home className="w-4 h-4" />
                   <span className="text-sm">חיפוש דירות</span>
                 </a>
               </Link>
-              
+
               <Link href="/landingpage">
                 <a className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 transition-colors text-white/70 hover:text-white">
                   <Info className="w-4 h-4" />
@@ -44,7 +49,7 @@ export default function Header() {
                 </a>
               </Link>
 
-              <a 
+              <a
                 href="https://t.me/The_Underdog_bot"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -57,32 +62,38 @@ export default function Header() {
           </nav>
 
           {/* Mobile Menu Button */}
-          <button 
-            className={`md:hidden transition-colors duration-300 ${isMenuOpen ? 'text-primary hover:text-primary/80' : 'text-white/70 hover:text-white'}`}
+          <button
+            className={`md:hidden transition-colors duration-300 ${isMenuOpen ? "text-primary hover:text-primary/80" : "text-white/70 hover:text-white"}`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <Menu className="w-6 h-6" />
           </button>
         </div>
-    
+
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden bg-black/20 backdrop-blur-md mt-2 rounded-2xl border border-white/10 p-2 space-y-1 shadow-lg mx-2 mb-2">
             <Link href="/">
-              <a className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-white/70 hover:text-white" onClick={handleLinkClick}>
+              <a
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-white/70 hover:text-white"
+                onClick={handleLinkClick}
+              >
                 <Home className="w-4 h-4" />
                 <span className="text-sm font-medium">חיפוש דירות</span>
               </a>
-            </Link> 
-            
+            </Link>
+
             <Link href="/landingpage">
-              <a className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-white/70 hover:text-white" onClick={handleLinkClick}>
+              <a
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-white/70 hover:text-white"
+                onClick={handleLinkClick}
+              >
                 <Info className="w-4 h-4" />
                 <span className="text-sm font-medium">מידע כללי</span>
               </a>
             </Link>
 
-            <a 
+            <a
               href="https://t.me/The_Underdog_bot"
               target="_blank"
               rel="noopener noreferrer"

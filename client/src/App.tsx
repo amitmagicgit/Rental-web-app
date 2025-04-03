@@ -16,7 +16,8 @@ import Header from "@/components/layout/Header";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
+      <Route path="/" component={LandingPage} />
+      <Route path="/HomePage" component={HomePage} />
       <Route path="/listing/:postId" component={ListingDetail} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/LandingPage" component={LandingPage} />

@@ -227,7 +227,7 @@ export default function LandingPage() {
               animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
-              חיפוש חכם, תוצאות מדויקות
+              חיפוש חכם, תוצאות מדויקb�ת{" "}
             </motion.h2>
 
             <motion.div
@@ -308,7 +308,10 @@ export default function LandingPage() {
                 className="relative group bg-primary hover:bg-primary/90 text-base md:text-lg px-8 py-6 rounded-full overflow-hidden"
                 asChild
               >
-                <a href="/" className="relative z-10 flex items-center gap-3">
+                <a
+                  href="/HomePage"
+                  className="relative z-10 flex items-center gap-3"
+                >
                   <motion.div
                     whileHover={{ rotate: 360 }}
                     transition={{ duration: 0.6 }}
