@@ -163,11 +163,11 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <motion.h1
-              className="text-5xl md:text-7xl font-bold mb-14 mt-20   bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent"
+              className="text-5xl md:text-6xl font-bold mb-14 mt-20 md:mt-44   bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent"
               animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
-              מוצאים לכם דירות להשכרה בצורה חכמה
+              מוצאים לכם דירות להשכרה{" "}
             </motion.h1>
 
             <motion.p
