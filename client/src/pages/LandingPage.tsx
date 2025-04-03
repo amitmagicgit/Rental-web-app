@@ -227,7 +227,7 @@ export default function LandingPage() {
               animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
-              חיפוש חכם, תוצאות מדויקb�ת{" "}
+              חיפוש חכם, תוצאה מדויקת{" "}
             </motion.h2>
 
             <motion.div
@@ -454,7 +454,7 @@ export default function LandingPage() {
         id="telegram"
         className="h-screen snap-start snap-always flex items-center relative overflow-y-hidden"
       >
-        <div className="container mx-auto px-4 py-8 md:py-0">
+        <div className="container mx-auto px-4 py-8 md:pt-20">
           <motion.div
             className="max-w-4xl mx-auto space-y-6 md:space-y-8 flex flex-col h-full justify-center"
             initial={{ opacity: 0 }}
