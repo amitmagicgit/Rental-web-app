@@ -94,7 +94,7 @@ export default function ListingDetail() {
         mobileHouses={4}
         mobilePeople={4}
       />
-      <div className="container mx-auto p-12 space-y-8">
+      <div className="container mx-auto p-12 pt-32 space-y-8">
         {/* Back Button */}
         <Button onClick={handleBack} className="mb-4">
           {backText}
@@ -200,7 +200,7 @@ export default function ListingDetail() {
           <div className="w-full md:w-1/2 space-y-4">
             {hasAttachments ? (
               <>
-                <div className="w-full aspect-[4/3] relative rounded-lg overflow-hidden shadow-md">
+                <div className="w-full aspect-[3/2] relative rounded-lg overflow-hidden shadow-md">
                   <img
                     src={listing.attachments[mainImageIndex]}
                     alt={`Property image ${mainImageIndex + 1}`}
