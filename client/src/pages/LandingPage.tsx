@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { NetworkAnimation } from "@/components/NetworkAnimation";
 
-
 export default function LandingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [formData, setFormData] = useState({ email: "", message: "" });
@@ -34,7 +33,7 @@ export default function LandingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      <NetworkAnimation 
+      <NetworkAnimation
         desktopHouses={10}
         desktopPeople={10}
         mobileHouses={7}
@@ -43,44 +42,49 @@ export default function LandingPage() {
 
       <main className="container mx-auto px-4 relative">
         {/* Hero Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="py-32 text-center"
         >
-          <motion.h1 
+          <motion.h1
             className="text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent"
             animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
             transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
           >
             מוצאים לכם דירות להשכרה בצורה חכמה
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            אנו סורקים את שוק הדירות ומביאים לכם את כל המודעות המעודכנות, בזמן אמת
+            אנו סורקים את שוק הדירות ומביאים לכם את כל המודעות המעודכנות, בזמן
+            אמת
           </motion.p>
-          <motion.div 
+          <motion.div
             className="flex gap-4 justify-center"
             whileHover={{ scale: 1.05 }}
           >
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-primary hover:bg-primary/90 text-xl px-8 py-6 rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)] hover:shadow-[0_0_25px_rgba(var(--primary),0.8)] transition-all duration-300"
               asChild
             >
-              <a href="https://t.me/The_Underdog_bot" target="_blank" rel="noopener noreferrer">
-                התחל עכשיו עם הבוט ✨
+              <a
+                href="https://t.me/The_Underdog_bot"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                התחל עכשיו עם הבוט האישי ✨
               </a>
             </Button>
           </motion.div>
         </motion.div>
 
         {/* Features Section */}
-        <motion.section 
+        <motion.section
           className="py-24"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -91,18 +95,18 @@ export default function LandingPage() {
               {
                 icon: "🔍",
                 title: "חיפוש חכם",
-                desc: "סריקה מתמדת של כל המודעות החדשות בשוק"
+                desc: "סריקה מתמדת של כל המודעות החדשות בשוק",
               },
               {
                 icon: "⚡",
                 title: "התראות בזמן אמת",
-                desc: "קבלו עדכונים מיידים על דירות חדשות"
+                desc: "קבלו עדכונים מיידים על דירות חדשות",
               },
               {
                 icon: "🎯",
                 title: "התאמה אישית",
-                desc: "סינון לפי הקריטריונים החשובים לכם"
-              }
+                desc: "סינון לפי הקריטריונים החשובים לכם",
+              },
             ].map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -116,8 +120,12 @@ export default function LandingPage() {
                 <div className="relative bg-background/40 backdrop-blur-xl p-8 rounded-2xl border border-primary/10 hover:border-primary/30 transition-all duration-300">
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <div className="text-4xl mb-4 transform group-hover:scale-110 transition-transform">{feature.icon}</div>
-                    <h3 className="text-2xl font-semibold mb-3">{feature.title}</h3>
+                    <div className="text-4xl mb-4 transform group-hover:scale-110 transition-transform">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-2xl font-semibold mb-3">
+                      {feature.title}
+                    </h3>
                     <p className="text-muted-foreground">{feature.desc}</p>
                   </div>
                 </div>
@@ -127,7 +135,7 @@ export default function LandingPage() {
         </motion.section>
 
         {/* Telegram Groups */}
-        <motion.section 
+        <motion.section
           className="py-24"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -138,7 +146,10 @@ export default function LandingPage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {[
-              { name: "כרם התימנים נווה צדק מונטיפיורי", link: "https://t.me/+PtPRCeETJGcxMTNk" },
+              {
+                name: "כרם התימנים נווה צדק מונטיפיורי",
+                link: "https://t.me/+PtPRCeETJGcxMTNk",
+              },
               { name: "הצפון החדש", link: "https://t.me/+Wgaiil3L2F9jNzY0" },
               { name: "הצפון הישן", link: "https://t.me/+e-QO_NDnytBhMDBk" },
               { name: "פלורנטיין", link: "https://t.me/+Mu5-w5wxb5RmMzY0" },
@@ -167,7 +178,7 @@ export default function LandingPage() {
         </motion.section>
 
         {/* Contact Form */}
-        <motion.section 
+        <motion.section
           className="py-24"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -186,7 +197,10 @@ export default function LandingPage() {
             >
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     המייל שלך
                   </label>
                   <input
@@ -201,7 +215,10 @@ export default function LandingPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     הודעתך
                   </label>
                   <textarea
@@ -220,7 +237,9 @@ export default function LandingPage() {
                 </Button>
               </div>
               {status && (
-                <p className="text-center text-sm text-muted-foreground mt-4">{status}</p>
+                <p className="text-center text-sm text-muted-foreground mt-4">
+                  {status}
+                </p>
               )}
             </motion.form>
           </div>
