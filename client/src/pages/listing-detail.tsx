@@ -88,11 +88,11 @@ export default function ListingDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <NetworkAnimation 
-        desktopHouses={6}
-        desktopPeople={6}
+      <NetworkAnimation
+        desktopHouses={5}
+        desktopPeople={5}
         mobileHouses={4}
-        mobilePeople={4}
+        mobilePeople={3}
       />
       <div className="container mx-auto p-12 pt-32 space-y-8">
         {/* Back Button */}
