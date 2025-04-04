@@ -150,10 +150,10 @@ export default function LandingPage() {
         className="h-screen snap-start snap-always flex items-center relative"
       >
         <NetworkAnimation
-          desktopHouses={10}
-          desktopPeople={10}
-          mobileHouses={7}
-          mobilePeople={7}
+          desktopHouses={8}
+          desktopPeople={7}
+          mobileHouses={6}
+          mobilePeople={5}
         />
         <div className="container mx-auto px-4 max-w-[1280px] w-[95%] pt-20 md:pt-0">
           <motion.div
@@ -227,7 +227,7 @@ export default function LandingPage() {
               animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
             >
-              חיפוש חכם, תוצאות מדויקות
+              חיפוש חכם, תוצאה מדויקת{" "}
             </motion.h2>
 
             <motion.div
@@ -310,7 +310,10 @@ export default function LandingPage() {
                 className="relative group bg-primary hover:bg-primary/90 text-base md:text-lg px-8 py-6 rounded-full overflow-hidden"
                 asChild
               >
-                <a href="/" className="relative z-10 flex items-center gap-3">
+                <a
+                  href="/HomePage"
+                  className="relative z-10 flex items-center gap-3"
+                >
                   <motion.div
                     whileHover={{ rotate: 360 }}
                     transition={{ duration: 0.6 }}
@@ -455,7 +458,7 @@ export default function LandingPage() {
         id="telegram"
         className="h-screen snap-start snap-always flex items-center relative overflow-y-hidden"
       >
-        <div className="container mx-auto px-4 py-8 md:py-0">
+        <div className="container mx-auto px-4 py-8 md:pt-20">
           <motion.div
             className="max-w-4xl mx-auto space-y-6 md:space-y-8 flex flex-col h-full justify-center"
             initial={{ opacity: 0 }}

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Home, MapPin, Ruler, BedDouble, Clock } from "lucide-react";
 import FilterSidebar from "@/components/layout/sidefilter";
+import { NetworkAnimation } from "@/components/NetworkAnimation";
 
 // Multi-choice options for query building
 const MULTI_OPTIONS = ["yes", "no", "not mentioned"];
@@ -161,11 +162,17 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background ">
+      <NetworkAnimation
+        desktopHouses={5}
+        desktopPeople={5}
+        mobileHouses={4}
+        mobilePeople={3}
+      />
       <div className="container mx-auto p-4 pt-24">
         <h1 className="text-2xl md:text-3xl font-bold text-center mb-14 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
           דירות להשכרה בתל אביב
         </h1>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Filters Sidebar */}
           <div className="md:col-span-1">
@@ -263,9 +270,12 @@ export default function HomePage() {
                             <div className="flex-1 flex flex-col items-center px-1 text-center">
                               <Ruler className="h-5 w-5 text-primary" />
                               <span className="text-sm font-medium text-gray-700">
-                                {Number(listing.size).toLocaleString(undefined, {
-                                  maximumFractionDigits: 0,
-                                })}{" "}
+                                {Number(listing.size).toLocaleString(
+                                  undefined,
+                                  {
+                                    maximumFractionDigits: 0,
+                                  },
+                                )}{" "}
                                 מ״ר
                               </span>
                             </div>
