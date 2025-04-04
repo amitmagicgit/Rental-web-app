@@ -155,7 +155,7 @@ export default function LandingPage() {
           mobileHouses={7}
           mobilePeople={7}
         />
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-[1280px] w-[95%] pt-20 md:pt-0">
           <motion.div
             className="py-24 md:py-32 text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -215,7 +215,7 @@ export default function LandingPage() {
         id="info"
         className="h-screen snap-start snap-always flex items-start pt-28 md:pt-44 relative"
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-[1280px] w-[95%] pt-20 md:pt-0">
           <motion.div
             className="max-w-4xl mx-auto space-y-4"
             initial={{ opacity: 0 }}
@@ -265,7 +265,7 @@ export default function LandingPage() {
                 ].map((item, index) => (
                   <motion.div
                     key={index}
-                    className="group bg-background/5 backdrop-blur-[2px] rounded-xl p-2 md:p-4 flex flex-col items-center gap-1 md:gap-2 border border-primary/10 hover:border-primary/30 hover:bg-background/10 transition-all duration-300"
+                    className="group bg-background/5 backdrop-blur-[2px] rounded-xl p-3 md:p-4 flex flex-row sm:flex-col items-center justify-center gap-3 sm:gap-2 border border-primary/10 hover:border-primary/30 hover:bg-background/10 transition-all duration-300"
                     whileHover={{ y: -5, scale: 1.02 }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -282,17 +282,19 @@ export default function LandingPage() {
                         duration: 0.6,
                       }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <span className="text-2xl md:text-3xl transform inline-block">
                         {item.icon}
                       </span>
                     </motion.div>
-                    <span className="text-sm md:text-base font-medium text-center">
-                      {item.text}
-                    </span>
-                    <span className="text-xs text-muted-foreground text-center">
-                      {item.description}
-                    </span>
+                    <div className="flex flex-col items-center">
+                      <span className="text-sm md:text-base font-medium text-center">
+                        {item.text}
+                      </span>
+                      <span className="text-xs text-muted-foreground text-center">
+                        {item.description}
+                      </span>
+                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -329,7 +331,7 @@ export default function LandingPage() {
         id="bot"
         className="h-screen snap-start snap-always flex items-start pt-28 md:pt-44 relative"
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-[1280px] w-[95%] pt-20 md:pt-0">
           <motion.div
             className="max-w-4xl mx-auto space-y-4"
             initial={{ opacity: 0 }}
@@ -382,7 +384,7 @@ export default function LandingPage() {
                 ].map((item, index) => (
                   <motion.div
                     key={index}
-                    className="group bg-background/5 backdrop-blur-[2px] rounded-xl p-2 md:p-4 flex flex-col items-center gap-1 md:gap-2 border border-primary/10 hover:border-primary/30 hover:bg-background/10 transition-all duration-300"
+                    className="group bg-background/5 backdrop-blur-[2px] rounded-xl p-3 md:p-4 flex flex-row sm:flex-col items-center justify-center gap-3 sm:gap-2 border border-primary/10 hover:border-primary/30 hover:bg-background/10 transition-all duration-300"
                     whileHover={{ y: -5, scale: 1.02 }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -399,17 +401,19 @@ export default function LandingPage() {
                         duration: 0.6,
                       }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <span className="text-2xl md:text-3xl transform inline-block">
                         {item.icon}
                       </span>
                     </motion.div>
-                    <span className="text-sm md:text-base font-medium text-center">
-                      {item.text}
-                    </span>
-                    <span className="text-xs text-muted-foreground text-center">
-                      {item.description}
-                    </span>
+                    <div className="flex flex-col items-center">
+                      <span className="text-sm md:text-base font-medium text-center">
+                        {item.text}
+                      </span>
+                      <span className="text-xs text-muted-foreground text-center">
+                        {item.description}
+                      </span>
+                    </div>
                   </motion.div>
                 ))}
               </div>

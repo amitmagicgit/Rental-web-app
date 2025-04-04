@@ -236,7 +236,7 @@ function PrivateSubscriptionPage() {
         mobileHouses={5}
         mobilePeople={5}
       />
-      <main className="flex-grow flex items-center justify-center p-4 relative z-10">
+      <main className="flex-grow flex items-center justify-center p-4 py-28 relative z-10">
         <Card className="w-full max-w-lg">
           <CardHeader>
             <h2 className="text-2xl font-bold">בחר פילטרים לבוט האישי</h2>
