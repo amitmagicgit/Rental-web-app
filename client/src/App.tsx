@@ -6,7 +6,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
-import HomePage from "@/pages/home-page";
+import SearchPage from "@/pages/searchPage";
 import ListingDetail from "@/pages/listing-detail";
 import UserDashboard from "@/pages/user-dashboard";
 import PrivateSubscriptionPage from "@/pages/PrivateSubscriptionPage";
@@ -17,7 +17,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
-      <Route path="/HomePage" component={HomePage} />
+      <Route path="/SearchPage" component={SearchPage} />
       <Route path="/listing/:postId" component={ListingDetail} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/LandingPage" component={LandingPage} />

@@ -213,7 +213,7 @@ export default function LandingPage() {
       {/* Info Section */}
       <section
         id="info"
-        className="h-screen snap-start snap-always flex items-start pt-28 md:pt-44 relative"
+        className="h-screen snap-start snap-always flex items-start pt-14 md:pt-44 relative"
       >
         <div className="container mx-auto px-4 max-w-[1280px] w-[95%] pt-20 md:pt-0">
           <motion.div
@@ -332,7 +332,7 @@ export default function LandingPage() {
       {/* Personal Bot Section */}
       <section
         id="bot"
-        className="h-screen snap-start snap-always flex items-start pt-28 md:pt-44 relative"
+        className="h-screen snap-start snap-always flex items-start pt-14 md:pt-44 relative"
       >
         <div className="container mx-auto px-4 max-w-[1280px] w-[95%] pt-20 md:pt-0">
           <motion.div

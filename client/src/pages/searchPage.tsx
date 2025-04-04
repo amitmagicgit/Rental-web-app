@@ -100,7 +100,7 @@ function timeAgo(createdAt: string) {
   }
 }
 
-export default function HomePage() {
+export default function SearchPage() {
   const [location, setLocation] = useLocation();
 
   // Parse initial filters from the URL on mount.
@@ -162,22 +162,22 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background ">
-      <NetworkAnimation
-        desktopHouses={5}
-        desktopPeople={5}
-        mobileHouses={4}
-        mobilePeople={3}
-      />
+          <NetworkAnimation
+          desktopHouses={5}
+          desktopPeople={4}
+          mobileHouses={3}
+          mobilePeople={2}
+        />
       <div className="container mx-auto p-4 pt-24">
         <h1 className="text-2xl md:text-3xl font-bold text-center mb-14 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
           דירות להשכרה בתל אביב
         </h1>
-
+        
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Filters Sidebar */}
           <div className="md:col-span-1">
             <h2 className="text-lg md:text-xl font-semibold mb-4 text-center md:text-start text-primary">
-              הגדירו פילטרים ומצאו את הדירה שלכם
+              הגדירו פילטרים וחפשו את הדירה שלכם
             </h2>
             <FilterSidebar onChange={setFilters} initialFilters={filters} />
           </div>
@@ -270,12 +270,9 @@ export default function HomePage() {
                             <div className="flex-1 flex flex-col items-center px-1 text-center">
                               <Ruler className="h-5 w-5 text-primary" />
                               <span className="text-sm font-medium text-gray-700">
-                                {Number(listing.size).toLocaleString(
-                                  undefined,
-                                  {
-                                    maximumFractionDigits: 0,
-                                  },
-                                )}{" "}
+                                {Number(listing.size).toLocaleString(undefined, {
+                                  maximumFractionDigits: 0,
+                                })}{" "}
                                 מ״ר
                               </span>
                             </div>

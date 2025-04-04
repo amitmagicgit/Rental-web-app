@@ -35,7 +35,7 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center">
             <div className="bg-black/20 backdrop-blur-sm rounded-full p-1.5 flex gap-1">
-              <Link href="/HomePage">
+              <Link href="/SearchPage">
                 <a className="flex items-center gap-2 px-4 py-1.5 rounded-full hover:bg-white/10 transition-colors text-white/70 hover:text-white">
                   <Home className="w-4 h-4" />
                   <span className="text-sm">חיפוש דירות</span>
@@ -73,7 +73,7 @@ export default function Header() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden bg-black/20 backdrop-blur-md mt-2 rounded-2xl border border-white/10 p-2 space-y-1 shadow-lg mx-2 mb-2">
-            <Link href="/">
+            <Link href="/SearchPage">
               <a
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-white/70 hover:text-white"
                 onClick={handleLinkClick}
