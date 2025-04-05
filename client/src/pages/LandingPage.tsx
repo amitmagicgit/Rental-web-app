@@ -311,7 +311,7 @@ export default function LandingPage() {
                 asChild
               >
                 <a
-                  href="/HomePage"
+                  href="/SearchPage"
                   className="relative z-10 flex items-center gap-3"
                 >
                   <motion.div
