@@ -52,6 +52,7 @@ function PrivateSubscriptionPage() {
     agent: "",
     parking: "",
     furnished: "",
+    neighborhoods: "",
   });
 
   // Extract query parameters on mount
@@ -170,6 +171,16 @@ function PrivateSubscriptionPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate neighborhoods
+    if (neighborhoods.length === 0) {
+      setErrors(prev => ({
+        ...prev,
+        neighborhoods: "יש לבחור לפחות שכונה אחת"
+      }));
+      return;
+    }
+
     setLoading(true);
 
     const body = {
@@ -345,18 +356,26 @@ function PrivateSubscriptionPage() {
                           type="checkbox"
                           className="accent-primary"
                           checked={neighborhoods.includes(n)}
-                          onChange={() =>
+                          onChange={() => {
                             setNeighborhoods((curr) =>
                               curr.includes(n)
                                 ? curr.filter((x) => x !== n)
                                 : [...curr, n],
-                            )
-                          }
+                            );
+                            // Clear error when user makes a selection
+                            setErrors(prev => ({
+                              ...prev,
+                              neighborhoods: ""
+                            }));
+                          }}
                         />
                         <span>{n}</span>
                       </label>
                     ))}
                   </div>
+                  {errors.neighborhoods && (
+                    <div className="text-red-500 text-sm mt-1">{errors.neighborhoods}</div>
+                  )}
                 </div>
 
                 {/* Multi-choice Fields */}
