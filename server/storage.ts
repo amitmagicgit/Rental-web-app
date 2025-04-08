@@ -25,6 +25,7 @@ export interface IStorage {
 
   getListings(filters?: Partial<UserFilter>): Promise<Listing[]>;
   getListingByPostId(postId: string): Promise<Listing | undefined>;
+  saveUserListingView(telegramChatId: string, postId: string): Promise<void>;
 
   getUserFilters(userId: number): Promise<UserFilter[]>;
   createUserFilter(
@@ -216,6 +217,13 @@ export class DbStorage implements IStorage {
       [postId],
     );
     return result.rows[0];
+  }
+
+  async saveUserListingView(telegramChatId: string, postId: string): Promise<void> {
+    await this.pool.query(
+      "INSERT INTO user_listing_entries (telegram_chat_id, post_id) VALUES ($1, $2)",
+      [telegramChatId, postId]
+    );
   }
 
   async getUserFilters(userId: number): Promise<UserFilter[]> {

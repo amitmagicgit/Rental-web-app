@@ -34,6 +34,38 @@ export default function ListingDetail() {
   const [, params] = useRoute("/listing/:postId");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [backText, setBackText] = useState("חזרה לחיפוש");
+  const [optionalChatId, setOptionalChatId] = useState<string>("");
+
+  // Extract query parameters on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const chatIdParam = params.get("ci");
+    if (chatIdParam) setOptionalChatId(chatIdParam);
+  }, []);
+
+  // Save listing view to user_listing_entries if chat ID is present
+  useEffect(() => {
+    const saveListingView = async () => {
+      if (optionalChatId && params?.postId) {
+        try {
+          await fetch("/api/user/listing-view", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              telegramChatId: optionalChatId,
+              postId: params.postId,
+            }),
+          });
+        } catch (error) {
+          console.error("Failed to save listing view:", error);
+        }
+      }
+    };
+
+    saveListingView();
+  }, [optionalChatId, params?.postId]);
 
   // Determine if history exists (if not, we'll navigate to the root).
   useEffect(() => {
@@ -55,7 +87,7 @@ export default function ListingDetail() {
   const { data: listing, isLoading } = useQuery<Listing>({
     queryKey: [`/api/listings/${params?.postId}`],
   });
-
+  
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">

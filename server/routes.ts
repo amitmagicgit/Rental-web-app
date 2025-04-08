@@ -57,6 +57,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(listing);
   });
 
+  // Save user listing view
+  app.post("/api/user/listing-view", async (req, res) => {
+    const { telegramChatId, postId } = req.body;
+    
+    if (!telegramChatId || !postId) {
+      return res.status(400).json({ error: "Missing telegramChatId or postId" });
+    }
+    
+    try {
+      await storage.saveUserListingView(telegramChatId, postId);
+      res.status(200).json({ success: true });
+    } catch (error) {
+      console.error("Error saving listing view:", error);
+      res.status(500).json({ error: "Failed to save listing view" });
+    }
+  });
+
   // User subscription routes
   app.post("/api/user/subscribe", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

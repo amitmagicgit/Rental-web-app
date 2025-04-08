@@ -21,6 +21,7 @@ function PrivateSubscriptionPage() {
   const [location] = useLocation();
   const [chatId, setChatId] = useState<string>("");
   const [token, setToken] = useState<string>("");
+  const [optionalChatId, setOptionalChatId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState<boolean>(true);
   const [paramsLoaded, setParamsLoaded] = useState<boolean>(false);
@@ -60,8 +61,11 @@ function PrivateSubscriptionPage() {
     const params = new URLSearchParams(window.location.search);
     const chatIdParam = params.get("chat_id");
     const tokenParam = params.get("token");
+    const optionalChatIdParam = params.get("ci");
+    
     if (chatIdParam) setChatId(chatIdParam);
     if (tokenParam) setToken(tokenParam);
+    if (optionalChatIdParam) setOptionalChatId(optionalChatIdParam);
     setParamsLoaded(true);
   }, [location]);
 
