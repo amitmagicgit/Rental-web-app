@@ -12,6 +12,7 @@ import UserDashboard from "@/pages/user-dashboard";
 import PrivateSubscriptionPage from "@/pages/PrivateSubscriptionPage";
 import LandingPage from "@/pages/LandingPage";
 import Header from "@/components/layout/Header";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function Router() {
   return (
@@ -21,6 +22,8 @@ function Router() {
       <Route path="/listing/:postId" component={ListingDetail} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/LandingPage" component={LandingPage} />
+      <Route path="/Admin" component={AdminDashboard} />
+
       <ProtectedRoute path="/dashboard" component={UserDashboard} />
       <Route
         path="/dashboard/private-subscription"

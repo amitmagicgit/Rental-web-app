@@ -74,6 +74,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes
+  app.post("/api/admin/login", async (req, res) => {
+    const { password } = req.body;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    
+    if (!adminPassword) {
+      return res.status(500).json({ error: "Admin password not configured" });
+    }
+    
+    if (password === adminPassword) {
+      res.status(200).json({ success: true });
+    } else {
+      res.status(401).json({ error: "Invalid password" });
+    }
+  });
+
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const stats = await storage.getListingViewsStats();
+      const subscriptionStats = await storage.getSubscriptionStats();
+      const totalUsers = await storage.getTotalUsersCount();
+      const dailyUserStats = await storage.getDailyUserStats();
+      res.json({
+        listingViews: stats,
+        subscriptions: subscriptionStats,
+        totalUsers,
+        dailyUserStats
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Failed to fetch admin statistics" });
+    }
+  });
+
   // User subscription routes
   app.post("/api/user/subscribe", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

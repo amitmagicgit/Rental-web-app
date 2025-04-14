@@ -26,6 +26,10 @@ export interface IStorage {
   getListings(filters?: Partial<UserFilter>): Promise<Listing[]>;
   getListingByPostId(postId: string): Promise<Listing | undefined>;
   saveUserListingView(telegramChatId: string, postId: string): Promise<void>;
+  getListingViewsStats(): Promise<Array<{ date_created: string; telegram_chat_id: string; entry_count: number }>>;
+  getSubscriptionStats(): Promise<Array<{ date_created: string; subscription_count: number }>>;
+  getTotalUsersCount(): Promise<number>;
+  getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>>;
 
   getUserFilters(userId: number): Promise<UserFilter[]>;
   createUserFilter(
@@ -224,6 +228,62 @@ export class DbStorage implements IStorage {
       "INSERT INTO user_listing_entries (telegram_chat_id, post_id) VALUES ($1, $2)",
       [telegramChatId, postId]
     );
+  }
+
+  async getListingViewsStats(): Promise<Array<{ date_created: string; telegram_chat_id: string; entry_count: number }>> {
+    const result = await this.pool.query(`
+      SELECT 
+        created_at::date AS date_created, 
+        telegram_chat_id, 
+        COUNT(*) AS entry_count
+      FROM 
+        user_listing_entries
+      GROUP BY 
+        created_at::date, 
+        telegram_chat_id
+      ORDER BY 
+        date_created DESC
+    `);
+    return result.rows;
+  }
+
+  async getSubscriptionStats(): Promise<Array<{ date_created: string; subscription_count: number }>> {
+    const result = await this.pool.query(`
+      SELECT 
+        created_at::date AS date_created, 
+        COUNT(*) AS subscription_count
+      FROM 
+        telegram_subscriptions
+      GROUP BY 
+        created_at::date
+      ORDER BY 
+        date_created DESC
+    `);
+    return result.rows;
+  }
+
+  async getTotalUsersCount(): Promise<number> {
+    const result = await this.pool.query(`
+      SELECT COUNT(*) FROM telegram_subscriptions
+      WHERE target_type = 'user'
+    `);
+    return parseInt(result.rows[0].count);
+  }
+
+  async getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>> {
+    const result = await this.pool.query(`
+      SELECT 
+        created_at::date AS date_created,
+        COUNT(DISTINCT telegram_chat_id) AS daily_active_users,
+        COUNT(*)::float / COUNT(DISTINCT telegram_chat_id) AS daily_views_per_user
+      FROM 
+        user_listing_entries
+      GROUP BY 
+        created_at::date
+      ORDER BY 
+        date_created DESC
+    `);
+    return result.rows;
   }
 
   async getUserFilters(userId: number): Promise<UserFilter[]> {
