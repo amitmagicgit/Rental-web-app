@@ -30,6 +30,7 @@ export interface IStorage {
   getSubscriptionStats(): Promise<Array<{ date_created: string; subscription_count: number }>>;
   getTotalUsersCount(): Promise<number>;
   getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>>;
+  getDailySentMessagesStats(): Promise<Array<{ date_sent: string; daily_sent: number }>>;
 
   getUserFilters(userId: number): Promise<UserFilter[]>;
   createUserFilter(
@@ -282,6 +283,21 @@ export class DbStorage implements IStorage {
         created_at::date
       ORDER BY 
         date_created DESC
+    `);
+    return result.rows;
+  }
+
+  async getDailySentMessagesStats(): Promise<Array<{ date_sent: string; daily_sent: number }>> {
+    const result = await this.pool.query(`
+      SELECT  
+        sent_at::date AS date_sent, 
+        COUNT(*) AS daily_sent
+      FROM 
+        telegram_message_log
+      GROUP BY 
+        sent_at::date
+      ORDER BY 
+        date_sent DESC
     `);
     return result.rows;
   }

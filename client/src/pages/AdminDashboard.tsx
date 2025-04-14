@@ -17,6 +17,7 @@ interface StatsData {
   }>;
   totalUsers: number;
   dailyUserStats: Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>;
+  dailySentMessages: Array<{ date_sent: string; daily_sent: number }>;
 }
 
 export default function AdminDashboard() {
@@ -142,6 +143,33 @@ export default function AdminDashboard() {
                       <td className="p-2">{new Date(stat.date_created).toLocaleDateString('he-IL')}</td>
                       <td className="p-2">{stat.daily_active_users}</td>
                       <td className="p-2">{stat.daily_views_per_user.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Daily Sent Messages Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>הודעות שנשלחו יומיות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="text-right p-2">תאריך</th>
+                    <th className="text-right p-2">מספר הודעות</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(stats?.dailySentMessages || []).map((stat) => (
+                    <tr key={stat.date_sent} className="border-t">
+                      <td className="p-2">{new Date(stat.date_sent).toLocaleDateString('he-IL')}</td>
+                      <td className="p-2">{stat.daily_sent}</td>
                     </tr>
                   ))}
                 </tbody>
