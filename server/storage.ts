@@ -29,7 +29,7 @@ export interface IStorage {
   getListingViewsStats(): Promise<Array<{ date_created: string; telegram_chat_id: string; entry_count: number }>>;
   getSubscriptionStats(): Promise<Array<{ date_created: string; subscription_count: number }>>;
   getTotalUsersCount(): Promise<number>;
-  getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number; listing_views: number }>>;
+  getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>>;
   getDailySentMessagesStats(): Promise<Array<{ date_sent: string; daily_sent: number }>>;
 
   getUserFilters(userId: number): Promise<UserFilter[]>;
@@ -241,6 +241,8 @@ export class DbStorage implements IStorage {
         COUNT(*) AS entry_count
       FROM 
         user_listing_entries
+      WHERE 
+        created_at::date >= CURRENT_DATE - INTERVAL '7 days'
       GROUP BY 
         created_at::date, 
         telegram_chat_id
@@ -273,28 +275,18 @@ export class DbStorage implements IStorage {
     return parseInt(result.rows[0].count);
   }
 
-  async getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number; listing_views: number }>> {
+  async getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>> {
     const result = await this.pool.query(`
-      WITH daily_stats AS (
-        SELECT 
-          created_at::date AS date_created,
-          COUNT(DISTINCT telegram_chat_id) AS daily_active_users,
-          COUNT(*) AS total_views
-        FROM 
-          user_listing_entries
-        GROUP BY 
-          created_at::date
-      )
       SELECT 
-        date_created,
-        daily_active_users,
-        CASE 
-          WHEN daily_active_users = 0 THEN 0
-          ELSE total_views::float / daily_active_users
-        END AS daily_views_per_user,
-        total_views AS listing_views
+        created_at::date AS date_created,
+        COUNT(DISTINCT telegram_chat_id) AS daily_active_users,
+        COUNT(*)::float / NULLIF(COUNT(DISTINCT telegram_chat_id), 0) AS daily_views_per_user
       FROM 
-        daily_stats
+        user_listing_entries
+      WHERE 
+        created_at::date >= CURRENT_DATE - INTERVAL '7 days'
+      GROUP BY 
+        created_at::date
       ORDER BY 
         date_created DESC
     `);
