@@ -29,7 +29,7 @@ export interface IStorage {
   getListingViewsStats(): Promise<Array<{ date_created: string; telegram_chat_id: string; entry_count: number }>>;
   getSubscriptionStats(): Promise<Array<{ date_created: string; subscription_count: number }>>;
   getTotalUsersCount(): Promise<number>;
-  getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>>;
+  getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number; listing_views: number }>>;
   getDailySentMessagesStats(): Promise<Array<{ date_sent: string; daily_sent: number }>>;
 
   getUserFilters(userId: number): Promise<UserFilter[]>;
@@ -44,6 +44,8 @@ export interface IStorage {
   deleteUserFilter(filterId: number): Promise<void>;
 
   sessionStore: session.Store;
+
+  getSourcePlatformStats(): Promise<Array<{ date_in: string; source_platform: string; count: number }>>;
 }
 
 export class DbStorage implements IStorage {
@@ -271,16 +273,28 @@ export class DbStorage implements IStorage {
     return parseInt(result.rows[0].count);
   }
 
-  async getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>> {
+  async getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number; listing_views: number }>> {
     const result = await this.pool.query(`
+      WITH daily_stats AS (
+        SELECT 
+          created_at::date AS date_created,
+          COUNT(DISTINCT telegram_chat_id) AS daily_active_users,
+          COUNT(*) AS total_views
+        FROM 
+          user_listing_entries
+        GROUP BY 
+          created_at::date
+      )
       SELECT 
-        created_at::date AS date_created,
-        COUNT(DISTINCT telegram_chat_id) AS daily_active_users,
-        COUNT(*)::float / COUNT(DISTINCT telegram_chat_id) AS daily_views_per_user
+        date_created,
+        daily_active_users,
+        CASE 
+          WHEN daily_active_users = 0 THEN 0
+          ELSE total_views::float / daily_active_users
+        END AS daily_views_per_user,
+        total_views AS listing_views
       FROM 
-        user_listing_entries
-      GROUP BY 
-        created_at::date
+        daily_stats
       ORDER BY 
         date_created DESC
     `);
@@ -455,6 +469,23 @@ export class DbStorage implements IStorage {
     await this.pool.query("DELETE FROM telegram_subscriptions WHERE id = $1", [
       filterId,
     ]);
+  }
+
+  async getSourcePlatformStats(): Promise<Array<{ date_in: string; source_platform: string; count: number }>> {
+    const result = await this.pool.query(`
+      SELECT 
+        created_at::date AS date_in, 
+        source_platform, 
+        COUNT(*) as count 
+      FROM 
+        processed_posts
+      GROUP BY 
+        created_at::date, 
+        source_platform
+      ORDER BY 
+        date_in DESC
+    `);
+    return result.rows;
   }
 }
 

@@ -97,12 +97,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalUsers = await storage.getTotalUsersCount();
       const dailyUserStats = await storage.getDailyUserStats();
       const dailySentMessages = await storage.getDailySentMessagesStats();
+      const sourcePlatformStats = await storage.getSourcePlatformStats();
       res.json({
         listingViews: stats,
         subscriptions: subscriptionStats,
         totalUsers,
         dailyUserStats,
-        dailySentMessages
+        dailySentMessages,
+        sourcePlatformStats
       });
     } catch (error) {
       console.error("Error fetching admin stats:", error);

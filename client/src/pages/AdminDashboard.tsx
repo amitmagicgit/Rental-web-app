@@ -18,6 +18,11 @@ interface StatsData {
   totalUsers: number;
   dailyUserStats: Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>;
   dailySentMessages: Array<{ date_sent: string; daily_sent: number }>;
+  sourcePlatformStats: Array<{
+    date_in: string;
+    source_platform: string;
+    count: number;
+  }>;
 }
 
 export default function AdminDashboard() {
@@ -226,6 +231,35 @@ export default function AdminDashboard() {
                     <tr key={index} className="border-t">
                       <td className="p-2">{new Date(sub.date_created).toLocaleDateString('he-IL')}</td>
                       <td className="p-2">{sub.subscription_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Source Platform Stats Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>סטטיסטיקות לפי פלטפורמה</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="text-right p-2">תאריך</th>
+                    <th className="text-right p-2">פלטפורמה</th>
+                    <th className="text-right p-2">מספר מודעות</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(stats?.sourcePlatformStats || []).map((stat, index) => (
+                    <tr key={index} className="border-t">
+                      <td className="p-2">{new Date(stat.date_in).toLocaleDateString('he-IL')}</td>
+                      <td className="p-2">{stat.source_platform}</td>
+                      <td className="p-2">{stat.count}</td>
                     </tr>
                   ))}
                 </tbody>
