@@ -5,7 +5,9 @@ import { storage } from "./storage";
 import { userFilterSchema } from "@shared/schema";
 import { z } from "zod";
 import sgMail from "@sendgrid/mail";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import path from "node:path";
+import fs from "node:fs/promises";
 
 dotenv.config();
 // Initialize SendGrid with API key from environment variables
@@ -18,6 +20,10 @@ if (SENDGRID_API_KEY) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
+  if (process.env.NODE_ENV === "production") {
+    const distDir = path.resolve(__dirname, "../client/dist"); // adjust if needed
+    app.use(express.static(distDir, { index: false })); // don’t auto‑send index.html
+  }
 
   // Listings routes
   app.get("/api/listings", async (req, res) => {
@@ -60,11 +66,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Save user listing view
   app.post("/api/user/listing-view", async (req, res) => {
     const { telegramChatId, postId } = req.body;
-    
+
     if (!telegramChatId || !postId) {
-      return res.status(400).json({ error: "Missing telegramChatId or postId" });
+      return res
+        .status(400)
+        .json({ error: "Missing telegramChatId or postId" });
     }
-    
+
     try {
       await storage.saveUserListingView(telegramChatId, postId);
       res.status(200).json({ success: true });
@@ -78,11 +86,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/login", async (req, res) => {
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD;
-    
+
     if (!adminPassword) {
       return res.status(500).json({ error: "Admin password not configured" });
     }
-    
+
     if (password === adminPassword) {
       res.status(200).json({ success: true });
     } else {
@@ -104,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalUsers,
         dailyUserStats,
         dailySentMessages,
-        sourcePlatformStats
+        sourcePlatformStats,
       });
     } catch (error) {
       console.error("Error fetching admin stats:", error);
@@ -307,6 +315,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     },
   );
+  app.get("/listing/:postId", async (req, res, next) => {
+    // Dev server: hand off to Vite / index.html so React Refresh works
+    if (process.env.NODE_ENV !== "production") return next();
+
+    // Return early if the caller explicitly wants JSON
+    if (req.headers.accept?.includes("application/json")) return next();
+
+    const listing = await storage.getListingByPostId(req.params.postId);
+    if (!listing) return res.status(404).send("Listing not found");
+
+    // 1️⃣  Build meta tags
+    const metaHtml = buildOgTags(listing, fullUrl(req));
+
+    // 2️⃣  Read the real production template once (cache for speed)
+    const distDir = path.resolve(__dirname, "../client/dist");
+    const template =
+      ogTemplateCache ??
+      (ogTemplateCache = await fs.readFile(
+        path.join(distDir, "index.html"),
+        "utf‑8",
+      ));
+
+    // 3️⃣  Inject before </head>
+    const html = template.replace("</head>", metaHtml + "\n</head>");
+
+    return res
+      .status(200)
+      .set("Content‑Type", "text/html; charset=utf‑8")
+      .end(html);
+  });
+
+  // ▶ ADD – tiny in‑memory cache so we read index.html only once
+  let ogTemplateCache: string | undefined;
+
+  if (process.env.NODE_ENV === "production") {
+    const distDir = path.resolve(__dirname, "../client/dist");
+    app.get("*", async (_req, res) => {
+      const html =
+        ogTemplateCache ??
+        (ogTemplateCache = await fs.readFile(
+          path.join(distDir, "index.html"),
+          "utf‑8",
+        ));
+      res.type("html").send(html);
+    });
+  }
 
   const httpServer = createServer(app);
   return httpServer;
@@ -338,4 +392,52 @@ async function sendTelegramMessage(chatId: number, text: string) {
  */
 function generateRandomToken(): string {
   return Math.random().toString(36).substring(2, 15);
+}
+function esc(s: string = "") {
+  return s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ]!,
+  );
+}
+
+/**
+ * Build OG & Twitter meta tags block.
+ */
+function buildOgTags(listing: any, requestUrl: string) {
+  const origin =
+    process.env.APP_URL?.replace(/\/$/, "") || "https://www.thefinder.co.il";
+
+  const hero =
+    listing.attachments?.[listing.source_platform === "facebook" ? 1 : 0] ??
+    "/fallback.jpg";
+  const img = /^https?:\/\//i.test(hero) ? hero : origin + hero;
+
+  const title = esc(
+    `₪${Number(listing.price).toLocaleString()} • ${listing.num_rooms} חדרים • ${listing.neighborhood}`,
+  );
+  const desc = esc((listing.description || "").slice(0, 200));
+
+  return `
+    <!-- Open Graph -->
+    <meta property="og:type"        content="article">
+    <meta property="og:url"         content="${requestUrl}">
+    <meta property="og:title"       content="${title}">
+    <meta property="og:description" content="${desc}">
+    <meta property="og:image"       content="${img}">
+
+    <!-- Twitter -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="${title}">
+    <meta name="twitter:description" content="${desc}">
+    <meta name="twitter:image"       content="${img}">
+  `;
+}
+
+/** Helper to get the absolute URL the crawler requested */
+function fullUrl(req: Request) {
+  const proto = req.headers["x-forwarded-proto"] || req.protocol;
+  return `${proto}://${req.get("host")}${req.originalUrl}`;
 }
