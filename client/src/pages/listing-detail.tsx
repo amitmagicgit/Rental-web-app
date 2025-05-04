@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NetworkAnimation } from "@/components/NetworkAnimation";
+import { ListingMetaTags } from "@/components/listing-meta-tags";
 
 // Shared helper to convert created_at to a time-ago string.
 function timeAgo(createdAt: string) {
@@ -110,16 +111,16 @@ export default function ListingDetail() {
   }
 
   const hasAttachments = listing.attachments && listing.attachments.length > 0;
+  const isFacebook = listing.url.includes('facebook.com');
   const mainImageIndex = hasAttachments
-    ? listing.source_platform === "facebook" &&
-      selectedImageIndex === 0 &&
-      listing.attachments[1]
+    ? isFacebook && selectedImageIndex === 0 && listing.attachments?.[1]
       ? 1
       : selectedImageIndex
     : 0;
 
   return (
     <div className="min-h-screen bg-background">
+      <ListingMetaTags listing={listing} />
       <NetworkAnimation
         desktopHouses={5}
         desktopPeople={5}
@@ -161,7 +162,7 @@ export default function ListingDetail() {
               <div className="flex items-center gap-1">
                 <BedDouble className="h-5 w-5" />
                 <span>
-                  {Number(listing.num_rooms).toLocaleString(undefined, {
+                  {Number(listing.numRooms).toLocaleString(undefined, {
                     maximumFractionDigits: 0,
                   })}{" "}
                   חדרים
@@ -169,14 +170,14 @@ export default function ListingDetail() {
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-5 w-5" />
-                <span>{timeAgo(listing.created_at)}</span>
+                <span>{timeAgo(listing.createdAt?.toString() || '')}</span>
               </div>
             </div>
             {/* Detailed Description */}
             <div className="prose max-w-none border-t pt-4">
               <h2 className="text-xl font-semibold mb-2">תיאור</h2>
               <p className="whitespace-pre-wrap">
-                {listing.detailed_description}
+                {listing.detailedDescription}
               </p>
             </div>
             {/* Features */}
@@ -208,13 +209,13 @@ export default function ListingDetail() {
                       rel="noopener noreferrer"
                     >
                       צפה במודעה המקורית
-                      {listing.source_platform === "facebook" ? (
+                      {isFacebook ? (
                         <img
                           src="/facebook-logo.png"
                           alt="Facebook Logo"
                           className="w-8 h-8 rounded-full"
                         />
-                      ) : listing.source_platform === "yad2" ? (
+                      ) : listing.url.includes('yad2.co.il') ? (
                         <img
                           src="/yad2-logo.jpg"
                           alt="Yad2 Logo"
@@ -234,18 +235,18 @@ export default function ListingDetail() {
               <>
                 <div className="w-full aspect-[3/2] relative rounded-lg overflow-hidden shadow-md">
                   <img
-                    src={listing.attachments[mainImageIndex]}
+                    src={listing.attachments?.[mainImageIndex] || ''}
                     alt={`Property image ${mainImageIndex + 1}`}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                   />
                   <div className="absolute top-2 left-2">
-                    {listing.source_platform === "facebook" ? (
+                    {isFacebook ? (
                       <img
                         src="/facebook-logo.png"
                         alt="Facebook Logo"
                         className="w-8 h-8 rounded-full"
                       />
-                    ) : listing.source_platform === "yad2" ? (
+                    ) : listing.url.includes('yad2.co.il') ? (
                       <img
                         src="/yad2-logo.jpg"
                         alt="Yad2 Logo"
@@ -255,10 +256,9 @@ export default function ListingDetail() {
                   </div>
                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                  {listing.attachments.map((imageUrl, index) => {
-                    // Skip the first attachment for Facebook source.
-                    if (listing.source_platform === "facebook" && index === 0)
-                      return null;
+                  {listing.attachments?.map((imageUrl, index) => {
+                    // Skip the first attachment for Facebook source
+                    if (isFacebook && index === 0) return null;
                     return (
                       <button
                         key={index}
