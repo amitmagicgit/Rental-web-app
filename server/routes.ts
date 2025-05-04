@@ -6,6 +6,7 @@ import { userFilterSchema } from "@shared/schema";
 import { z } from "zod";
 import sgMail from "@sendgrid/mail";
 import dotenv from 'dotenv';
+import { loadBaseHtml } from "./meta‑template";
 
 dotenv.config();
 // Initialize SendGrid with API key from environment variables
@@ -307,6 +308,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     },
   );
+
+  app.get("/listing/:postId", async (req, res, next) => {
+    try {
+      const postId = req.params.postId;
+      const l = await storage.getListingByPostId(postId);
+      if (!l) return next();       // unknown ID → let SPA handle 404
+  
+      // Pick the first visible photo
+      const mainIdx = (l.source_platform === "facebook" && l.attachments?.[1]) ? 1 : 0;
+      const ogImage = l.attachments?.[mainIdx] || "/logo.jpeg";
+  
+      // Build meta content
+      const title = `${l.neighborhood} • ${l.size} מ״ר • ₪${Number(l.price).toLocaleString()}`;
+      const desc  = (l.description ?? "").slice(0, 120);
+      const url   = `${process.env.APP_URL}/listing/${postId}`;
+  
+      // Inject meta tags (simple string replace)
+      let template = loadBaseHtml()
+      .replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
+      .replace(/<meta property="og:title".*?>/,
+               `<meta property="og:title" content="${title}"/>`)
+      .replace(/<meta property="og:description".*?>/,
+               `<meta property="og:description" content="${desc}"/>`)
+      .replace(/<meta property="og:image".*?>/,
+               `<meta property="og:image" content="${ogImage}"/>`)
+      .replace(/<meta property="og:url".*?>/,
+               `<meta property="og:url"  content="${url}"/>`)
+      .replace(/<meta name="twitter:title".*?>/,
+               `<meta name="twitter:title" content="${title}"/>`)
+      .replace(/<meta name="twitter:description".*?>/,
+               `<meta name="twitter:description" content="${desc}"/>`)
+      .replace(/<meta name="twitter:image".*?>/,
+               `<meta name="twitter:image" content="${ogImage}"/>`);
+
+    /* --------------------------------------------------------
+       In dev the Vite dev‑server must inject the React refresh
+       preamble and HMR client.  In prod (vite build) there is
+       no vite instance, so we skip this step.
+       -------------------------------------------------------- */
+    const vite = req.app.get("vite");          // undefined in prod
+    if (vite) {
+      template = template.replace(
+        'src="/src/main.tsx"',
+        `src="/src/main.tsx?v=${Date.now()}"`
+      );
+      template = await vite.transformIndexHtml(req.originalUrl, template);
+    }
+
+    res.setHeader("Content-Type", "text/html").send(template);
+    } catch (e) {
+      next(e);
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
