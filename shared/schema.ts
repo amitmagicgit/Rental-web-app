@@ -43,21 +43,21 @@ export const users = pgTable("users", {
 
 export const listings = pgTable("processed_posts", {
   id: serial("id").primaryKey(),
-  postId: text("post_id").notNull().unique(),
+  post_id: text("post_id").notNull().unique(),
   description: text("description").notNull(),
   price: real("price"),
   address: text("address"),
   neighborhood: text("neighborhood"),
-  numRooms: real("num_rooms"),
+  num_rooms: real("num_rooms"),
   size: real("size"),
   agent: text("agent"),
   balcony: text("balcony"),
   parking: text("parking"),
   furnished: text("furnished"),
-  detailedDescription: text("detailed_description"),
+  detailed_description: text("detailed_description"),
   url: text("url").notNull(),
   attachments: jsonb("attachments").$type<string[]>(),
-  createdAt: timestamp("created_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
 });
 
 export const userFilters = pgTable("user_filters", {

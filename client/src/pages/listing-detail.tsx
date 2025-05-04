@@ -88,6 +88,15 @@ export default function ListingDetail() {
   const { data: listing, isLoading } = useQuery<Listing>({
     queryKey: [`/api/listings/${params?.postId}`],
   });
+
+  useEffect(() => {
+    if (listing) {
+      console.log('Listing data:', listing);
+      console.log('numRooms:', listing.numRooms);
+      console.log('size:', listing.size);
+      console.log('createdAt:', listing.createdAt);
+    }
+  }, [listing]);
   
   if (isLoading) {
     return (
@@ -148,36 +157,36 @@ export default function ListingDetail() {
             <div className="flex flex-wrap gap-4 pt-6 text-muted-foreground">
               <div className="flex items-center gap-1">
                 <MapPin className="h-5 w-5" />
-                <span>{listing.neighborhood}</span>
+                <span>{listing.neighborhood || 'לא צוין'}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Ruler className="h-5 w-5" />
                 <span>
-                  {Number(listing.size).toLocaleString(undefined, {
+                  {listing.size && listing.size !== 0 ? Number(listing.size).toLocaleString(undefined, {
                     maximumFractionDigits: 0,
-                  })}{" "}
+                  }) : 'לא צוין'}{" "}
                   מ״ר
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <BedDouble className="h-5 w-5" />
                 <span>
-                  {Number(listing.numRooms).toLocaleString(undefined, {
+                  {listing.num_rooms && listing.num_rooms !== 0 ? Number(listing.num_rooms).toLocaleString(undefined, {
                     maximumFractionDigits: 0,
-                  })}{" "}
+                  }) : 'לא צוין'}{" "}
                   חדרים
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-5 w-5" />
-                <span>{timeAgo(listing.createdAt?.toString() || '')}</span>
+                <span>{listing.created_at ? timeAgo(listing.created_at.toString()) : 'לא צוין'}</span>
               </div>
             </div>
             {/* Detailed Description */}
             <div className="prose max-w-none border-t pt-4">
               <h2 className="text-xl font-semibold mb-2">תיאור</h2>
               <p className="whitespace-pre-wrap">
-                {listing.detailedDescription}
+                {listing.detailed_description || 'לא צוין'}
               </p>
             </div>
             {/* Features */}

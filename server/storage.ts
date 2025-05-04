@@ -23,7 +23,11 @@ export interface IStorage {
   updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User>;
   updateUserTelegramChat(userId: number, chatId: string): Promise<User>;
 
-  getListings(filters?: Partial<UserFilter>): Promise<Listing[]>;
+  getListings(filters?: Partial<UserFilter> & {
+    includeZeroPrice?: boolean;
+    includeZeroSize?: boolean;
+    includeZeroRooms?: boolean;
+  }): Promise<Listing[]>;
   getListingByPostId(postId: string): Promise<Listing | undefined>;
   saveUserListingView(telegramChatId: string, postId: string): Promise<void>;
   getListingViewsStats(): Promise<Array<{ date_created: string; telegram_chat_id: string; entry_count: number }>>;
@@ -49,7 +53,7 @@ export interface IStorage {
 }
 
 export class DbStorage implements IStorage {
-  private pool: Pool;
+  private pool: pkg.Pool;
   sessionStore: session.Store;
 
   constructor() {
@@ -115,7 +119,11 @@ export class DbStorage implements IStorage {
     return result.rows[0];
   }
 
-  async getListings(filters?: Partial<UserFilter>): Promise<Listing[]> {
+  async getListings(filters?: Partial<UserFilter> & {
+    includeZeroPrice?: boolean;
+    includeZeroSize?: boolean;
+    includeZeroRooms?: boolean;
+  }): Promise<Listing[]> {
     let query = "SELECT * FROM processed_posts";
     const params: any[] = [];
     const conditions: string[] = [];
