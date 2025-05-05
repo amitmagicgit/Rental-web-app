@@ -28,12 +28,12 @@ function PrivateSubscriptionPage() {
   const { toast } = useToast();
 
   // Filter states
-  const [minPrice, setMinPrice] = useState<number>(0);
-  const [maxPrice, setMaxPrice] = useState<number>(15000);
-  const [minSize, setMinSize] = useState<number>(0);
-  const [maxSize, setMaxSize] = useState<number>(200);
-  const [minRooms, setMinRooms] = useState<number>(0);
-  const [maxRooms, setMaxRooms] = useState<number>(5);
+  const [minPrice, setMinPrice] = useState<number | ''>(0);
+  const [maxPrice, setMaxPrice] = useState<number | ''>(15000);
+  const [minSize, setMinSize] = useState<number | ''>(0);
+  const [maxSize, setMaxSize] = useState<number | ''>(200);
+  const [minRooms, setMinRooms] = useState<number | ''>(0);
+  const [maxRooms, setMaxRooms] = useState<number | ''>(5);
   const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
 
   // Multi-choice fields (default: all selected)
@@ -191,13 +191,13 @@ function PrivateSubscriptionPage() {
       chatId,
       token,
       targetType: "user",
-      minPrice,
-      maxPrice,
-      minSize,
-      maxSize,
+      minPrice: minPrice || 0,
+      maxPrice: maxPrice || 99000,
+      minSize: minSize || 0,
+      maxSize: maxSize || 99000,
       neighborhoods,
-      minRooms,
-      maxRooms,
+      minRooms: minRooms || 0,
+      maxRooms: maxRooms || 99000,
       balcony,
       agent,
       parking,
@@ -272,13 +272,13 @@ function PrivateSubscriptionPage() {
                       type="number"
                       placeholder="מינימום"
                       value={minPrice}
-                      onChange={(e) => setMinPrice(Number(e.target.value))}
+                      onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                     <Input
                       type="number"
                       placeholder="מקסימום"
                       value={maxPrice}
-                      onChange={(e) => setMaxPrice(Number(e.target.value))}
+                      onChange={(e) => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                   <label className="flex items-center gap-1 mt-1">
@@ -300,13 +300,13 @@ function PrivateSubscriptionPage() {
                       type="number"
                       placeholder="מינימום"
                       value={minSize}
-                      onChange={(e) => setMinSize(Number(e.target.value))}
+                      onChange={(e) => setMinSize(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                     <Input
                       type="number"
                       placeholder="מקסימום"
                       value={maxSize}
-                      onChange={(e) => setMaxSize(Number(e.target.value))}
+                      onChange={(e) => setMaxSize(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                   <label className="flex items-center gap-1 mt-1">
@@ -328,13 +328,13 @@ function PrivateSubscriptionPage() {
                       type="number"
                       placeholder="מינימום"
                       value={minRooms}
-                      onChange={(e) => setMinRooms(Number(e.target.value))}
+                      onChange={(e) => setMinRooms(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                     <Input
                       type="number"
                       placeholder="מקסימום"
                       value={maxRooms}
-                      onChange={(e) => setMaxRooms(Number(e.target.value))}
+                      onChange={(e) => setMaxRooms(e.target.value === '' ? '' : Number(e.target.value))}
                     />
                   </div>
                   <label className="flex items-center gap-1 mt-1">
