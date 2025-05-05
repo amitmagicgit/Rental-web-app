@@ -14,7 +14,7 @@ const MULTI_OPTIONS = ["yes", "no", "not mentioned"];
 /**
  * Helper: Parse the URL query string into our filters object.
  */
-function parseFilters(queryString) {
+function parseFilters(queryString: string) {
   const params = new URLSearchParams(queryString);
   return {
     minPrice: Number(params.get("minPrice")) || 0,
@@ -38,13 +38,13 @@ function parseFilters(queryString) {
 /**
  * Helper: Stringify the filters object into a query string.
  */
-function stringifyFilters(filters) {
+function stringifyFilters(filters: Record<string, any>) {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       value.forEach((val) => params.append(key, val));
-    } else {
-      params.set(key, value.toString());
+    } else if (value !== undefined && value !== null) {
+      params.set(key, String(value));
     }
   });
   return params.toString();
@@ -86,8 +86,10 @@ async function fetchListings({ queryKey }: { queryKey: [string, any] }) {
 /**
  * Convert a created_at date into a "time ago" string in Hebrew.
  */
-function timeAgo(createdAt: string) {
-  const date = new Date(createdAt);
+function timeAgo(createdAt: string | Date | null) {
+  if (!createdAt) return "זמן לא ידוע";
+  
+  const date = createdAt instanceof Date ? createdAt : new Date(createdAt);
   const diffMs = Date.now() - date.getTime();
   const diffHours = diffMs / (1000 * 60 * 60);
 
@@ -197,105 +199,113 @@ export default function SearchPage() {
                         </CardContent>
                       </Card>
                     ))
-                : listings?.map((listing: Listing) => (
+                : listings?.map((listing: any) => (
                     <Link key={listing.id} href={`/listing/${listing.post_id}`}>
-                      <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
-                        <div className="relative h-48 bg-muted">
-                          {listing.attachments?.[0] ? (
-                            <img
-                              src={
-                                listing.source_platform === "facebook" &&
-                                listing.attachments[1]
-                                  ? listing.attachments[1]
-                                  : listing.attachments[0]
-                              }
-                              alt={listing.description}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-full flex items-center justify-center">
-                              <Home className="h-12 w-12 text-muted-foreground" />
+                      <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow h-32 md:h-auto">
+                        {/* Mobile view (flex row) / Desktop view (default block) */}
+                        <div className="flex flex-row md:block h-full">
+                          {/* Image section - fixed height on mobile, full height on desktop */}
+                          <div className="relative h-32 w-1/3 md:w-full md:h-48 bg-muted">
+                            {listing.attachments?.[0] ? (
+                              <img
+                                src={
+                                  listing.source_platform === "facebook" &&
+                                  listing.attachments[1]
+                                    ? listing.attachments[1]
+                                    : listing.attachments[0]
+                                }
+                                alt={listing.description}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-full flex items-center justify-center">
+                                <Home className="h-8 w-8 md:h-12 md:w-12 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="absolute top-1 left-1 md:top-2 md:left-2">
+                              {listing.source_platform === "facebook" ? (
+                                <img
+                                  src="/facebook-logo.png"
+                                  alt="Facebook Logo"
+                                  className="w-6 h-6 md:w-8 md:h-8 rounded-full"
+                                />
+                              ) : listing.source_platform === "yad2" ? (
+                                <img
+                                  src="/yad2-logo.jpg"
+                                  alt="Yad2 Logo"
+                                  className="w-6 h-6 md:w-8 md:h-8 rounded-full"
+                                />
+                              ) : null}
                             </div>
-                          )}
-                          <div className="absolute top-2 left-2">
-                            {listing.source_platform === "facebook" ? (
-                              <img
-                                src="/facebook-logo.png"
-                                alt="Facebook Logo"
-                                className="w-8 h-8 rounded-full"
-                              />
-                            ) : listing.source_platform === "yad2" ? (
-                              <img
-                                src="/yad2-logo.jpg"
-                                alt="Yad2 Logo"
-                                className="w-8 h-8 rounded-full"
-                              />
-                            ) : null}
+                          </div>
+                          
+                          {/* Content section - 2/3 width on mobile, full width on desktop */}
+                          <div className="w-2/3 md:w-full">
+                            <CardContent className="p-2 md:p-4">
+                              <h3 className="font-semibold mb-1 md:mb-2 line-clamp-1 md:line-clamp-2 text-sm md:text-base">
+                                {listing.description}
+                              </h3>
+                              <div className="text-lg md:text-xl font-bold mb-1 md:mb-4">
+                                <div>
+                                  ₪
+                                  {Number(listing.price).toLocaleString(undefined, {
+                                    maximumFractionDigits: 0,
+                                  })}
+                                  {listing.street &&
+                                    listing.street !== "לא צוין" &&
+                                    listing.street !== "not mentioned" && (
+                                      <span className="ml-2 text-xs md:text-sm mr-2">
+                                        {listing.street}
+                                      </span>
+                                    )}
+                                  {listing.house &&
+                                    listing.house !== "לא צוין" &&
+                                    listing.house !== "not mentioned" && (
+                                      <span className="ml-2 text-xs md:text-sm">
+                                        {listing.house}
+                                      </span>
+                                    )}
+                                </div>
+                              </div>
+                              <div className="w-full bg-white rounded-md shadow-sm py-1 md:py-3 flex items-center justify-between text-xs md:text-sm">
+                                <div className="flex-1 flex flex-col items-center px-1 text-center">
+                                  <MapPin className="h-3 w-3 md:h-5 md:w-5 text-primary" />
+                                  <span className="text-xs md:text-sm font-medium text-gray-700">
+                                    {listing.neighborhood}
+                                  </span>
+                                </div>
+                                <div className="w-px h-6 md:h-8 bg-gray-300 mx-1 md:mx-2" />
+                                <div className="flex-1 flex flex-col items-center px-1 text-center">
+                                  <Ruler className="h-3 w-3 md:h-5 md:w-5 text-primary" />
+                                  <span className="text-xs md:text-sm font-medium text-gray-700">
+                                    {Number(listing.size).toLocaleString(undefined, {
+                                      maximumFractionDigits: 0,
+                                    })}{" "}
+                                    מ״ר
+                                  </span>
+                                </div>
+                                <div className="w-px h-6 md:h-8 bg-gray-300 mx-1 md:mx-2" />
+                                <div className="flex-1 flex flex-col items-center px-1 text-center">
+                                  <BedDouble className="h-3 w-3 md:h-5 md:w-5 text-primary" />
+                                  <span className="text-xs md:text-sm font-medium text-gray-700">
+                                    {Number(listing.num_rooms).toLocaleString(
+                                      undefined,
+                                      { maximumFractionDigits: 0 },
+                                    )}{" "}
+                                    חדרים
+                                  </span>
+                                </div>
+                                <div className="w-px h-6 md:h-8 bg-gray-300 mx-1 md:mx-2" />
+                                <div className="flex-1 flex flex-col items-center px-1 text-center">
+                                  <Clock className="h-3 w-3 md:h-5 md:w-5 text-primary" />
+                                  <span className="text-xs md:text-sm font-medium text-gray-700">
+                                    {timeAgo(listing.created_at)}
+                                  </span>
+                                </div>
+                              </div>
+                            </CardContent>
                           </div>
                         </div>
-                        <CardContent className="p-4">
-                          <h3 className="font-semibold mb-2 line-clamp-2">
-                            {listing.description}
-                          </h3>
-                          <div className="text-xl font-bold mb-4">
-                            <div>
-                              ₪
-                              {Number(listing.price).toLocaleString(undefined, {
-                                maximumFractionDigits: 0,
-                              })}
-                              {listing.street &&
-                                listing.street !== "לא צוין" &&
-                                listing.street !== "not mentioned" && (
-                                  <span className="ml-2 text-sm mr-2">
-                                    {listing.street}
-                                  </span>
-                                )}
-                              {listing.house &&
-                                listing.house !== "לא צוין" &&
-                                listing.house !== "not mentioned" && (
-                                  <span className="ml-2 text-sm">
-                                    {listing.house}
-                                  </span>
-                                )}
-                            </div>
-                          </div>
-                          <div className="w-full bg-white rounded-md shadow-sm py-3 flex items-center justify-between">
-                            <div className="flex-1 flex flex-col items-center px-1 text-center">
-                              <MapPin className="h-5 w-5 text-primary" />
-                              <span className="text-sm font-medium text-gray-700">
-                                {listing.neighborhood}
-                              </span>
-                            </div>
-                            <div className="w-px h-8 bg-gray-300 mx-2" />
-                            <div className="flex-1 flex flex-col items-center px-1 text-center">
-                              <Ruler className="h-5 w-5 text-primary" />
-                              <span className="text-sm font-medium text-gray-700">
-                                {Number(listing.size).toLocaleString(undefined, {
-                                  maximumFractionDigits: 0,
-                                })}{" "}
-                                מ״ר
-                              </span>
-                            </div>
-                            <div className="w-px h-8 bg-gray-300 mx-2" />
-                            <div className="flex-1 flex flex-col items-center px-1 text-center">
-                              <BedDouble className="h-5 w-5 text-primary" />
-                              <span className="text-sm font-medium text-gray-700">
-                                {Number(listing.num_rooms).toLocaleString(
-                                  undefined,
-                                  { maximumFractionDigits: 0 },
-                                )}{" "}
-                                חדרים
-                              </span>
-                            </div>
-                            <div className="w-px h-8 bg-gray-300 mx-2" />
-                            <div className="flex-1 flex flex-col items-center px-1 text-center">
-                              <Clock className="h-5 w-5 text-primary" />
-                              <span className="text-sm font-medium text-gray-700">
-                                {timeAgo(listing.created_at)}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
                       </Card>
                     </Link>
                   ))}
