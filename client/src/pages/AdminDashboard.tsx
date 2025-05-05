@@ -2,7 +2,7 @@
 // Complete file – compact per-day histogram with dark-blue bars (#0F47AF) and NO axes.
 // Install Recharts once:  npm i recharts
 
-import { useState, useMemo, FormEvent } from "react";
+import { useState, useMemo, FormEvent, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -59,9 +59,13 @@ function buildViewHistogram(
 /* ——— Component ——— */
 export default function AdminDashboard() {
   const [password, setPassword] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Check localStorage on initial load
+    return localStorage.getItem('adminAuthenticated') === 'true';
+  });
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState<Record<string, number>>({
     dailyUserStats: 1,
     dailySentMessages: 1,
@@ -84,6 +88,7 @@ export default function AdminDashboard() {
       });
       if (res.ok) {
         setIsAuthenticated(true);
+        localStorage.setItem('adminAuthenticated', 'true');
         fetchStats();
       } else {
         toast({
@@ -107,7 +112,18 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const res = await fetch("/api/admin/stats");
-      if (res.ok) setStats(await res.json());
+      if (res.ok) {
+        setStats(await res.json());
+      } else if (res.status === 401) {
+        // Handle unauthorized - clear auth state
+        setIsAuthenticated(false);
+        localStorage.removeItem('adminAuthenticated');
+        toast({
+          title: "שגיאה",
+          description: "ההרשאות שלך פגו, אנא התחבר מחדש",
+          variant: "destructive",
+        });
+      }
     } catch (err) {
       toast({
         title: "שגיאה",
@@ -116,6 +132,13 @@ export default function AdminDashboard() {
       });
     }
   };
+
+  // Add useEffect to fetch stats on mount if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStats();
+    }
+  }, [isAuthenticated]);
 
   /* -------- histogram memo -------- */
   const histogramByDay = useMemo(() => {
@@ -194,7 +217,21 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold text-center">לוח בקרה</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">לוח בקרה</h1>
+          {isAuthenticated && (
+            <Button 
+              onClick={() => {
+                setRefreshing(true);
+                fetchStats().finally(() => setRefreshing(false));
+              }}
+              disabled={refreshing}
+            >
+              {refreshing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {refreshing ? "מעדכן..." : "עדכן נתונים"}
+            </Button>
+          )}
+        </div>
 
         {/* ——— total users ——— */}
         <Card>
