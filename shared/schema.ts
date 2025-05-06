@@ -11,20 +11,54 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const NEIGHBORHOODS = [
-  "כרם התימנים",
-  "נווה צדק",
-  "פלורנטיין",
-  "הצפון הישן",
-  "הצפון החדש",
-  "בבלי",
-  "מונטיפיורי",
-  "לב תל אביב",
-  "נמל תל אביב",
-  "התקווה",
-  "רמת אביב",
-  "נווה אביבים",
-] as const;
+export type CityNeighborhoodMap = {
+  [city: string]: readonly string[];
+};
+
+export const CITIES_AND_NEIGHBORHOODS: CityNeighborhoodMap = {
+  "תל אביב": [
+    "כרם התימנים",
+    "נווה צדק",
+    "פלורנטיין",
+    "הצפון הישן",
+    "הצפון החדש",
+    "בבלי",
+    "מונטיפיורי",
+    "לב תל אביב",
+    "נמל תל אביב",
+    "התקווה",
+    "רמת אביב",
+    "נווה אביבים",
+  ],
+  "רמת גן": [
+    "תל בנימין", 
+    "שיכון ותיקים", 
+    "הגפן", 
+    "הבורסה", 
+    "יהלום", 
+    "חשמונאים", 
+    "חרוזים", 
+    "בן גוריון", 
+    "הראשונים",
+    "רמת עמידר", 
+    "רמת חן", 
+    "קריית קריניצי", 
+
+  ],
+  "גבעתיים": [
+    "בורוכוב", 
+    "רמב\"ם", 
+    "קריית יוסף", 
+    "שכונת הפועלים", 
+    "כצנלסון",
+    "שינקין", 
+    "גבעת רמב\"ם", 
+    "ארלוזורוב",
+  ],
+} as const;
+
+// Flat array of all neighborhoods for backward compatibility
+export const NEIGHBORHOODS = Object.values(CITIES_AND_NEIGHBORHOODS).flat() as readonly string[];
 
 export const FILTER_OPTIONS = {
   ANY: "any",
