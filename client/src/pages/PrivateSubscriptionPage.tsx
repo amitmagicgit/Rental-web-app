@@ -3,8 +3,8 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { NEIGHBORHOODS } from "@shared/schema";
-import { Loader2 } from "lucide-react";
+import { CITIES_AND_NEIGHBORHOODS, NEIGHBORHOODS } from "@shared/schema";
+import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { NetworkAnimation } from "@/components/NetworkAnimation";
 
@@ -35,6 +35,9 @@ function PrivateSubscriptionPage() {
   const [minRooms, setMinRooms] = useState<number | ''>(0);
   const [maxRooms, setMaxRooms] = useState<number | ''>(5);
   const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  // Track which cities are expanded in the UI
+  const [expandedCities, setExpandedCities] = useState<string[]>([]);
 
   // Multi-choice fields (default: all selected)
   const [balcony, setBalcony] = useState<string[]>([...MULTI_OPTIONS]);
@@ -92,6 +95,17 @@ function PrivateSubscriptionPage() {
           setIncludeZeroPrice(data.include_zero_price);
           setIncludeZeroSize(data.include_zero_size);
           setIncludeZeroRooms(data.include_zero_rooms);
+          
+          // Determine selected cities based on neighborhoods
+          if (data.neighborhoods?.length) {
+            const cities = Object.keys(CITIES_AND_NEIGHBORHOODS);
+            const selectedCitiesList = cities.filter(city => 
+              CITIES_AND_NEIGHBORHOODS[city as keyof typeof CITIES_AND_NEIGHBORHOODS].some(n => data.neighborhoods.includes(n))
+            );
+            setSelectedCities(selectedCitiesList);
+            // Initially expand cities with selected neighborhoods
+            setExpandedCities(selectedCitiesList);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch subscription:", error);
@@ -167,10 +181,92 @@ function PrivateSubscriptionPage() {
     </div>
   );
 
+  const toggleCity = (city: string) => {
+    setSelectedCities((current) => {
+      const newSelectedCities = current.includes(city)
+        ? current.filter((c) => c !== city)
+        : [...current, city];
+      
+      // Update neighborhoods based on selected cities
+      const citiesNeighborhoods = newSelectedCities.flatMap(
+        (c) => CITIES_AND_NEIGHBORHOODS[c as keyof typeof CITIES_AND_NEIGHBORHOODS]
+      );
+      
+      // Keep only neighborhoods from currently selected cities
+      setNeighborhoods((current) => 
+        current.filter((n) => citiesNeighborhoods.includes(n))
+      );
+      
+      return newSelectedCities;
+    });
+    
+    // Clear error if any city is selected
+    if (!selectedCities.includes(city)) {
+      setErrors(prev => ({
+        ...prev,
+        neighborhoods: ""
+      }));
+    }
+  };
+
   const toggleNeighborhood = (n: string) => {
-    setNeighborhoods((current) =>
-      current.includes(n) ? current.filter((x) => x !== n) : [...current, n],
+    setNeighborhoods((current) => {
+      const newNeighborhoods = current.includes(n) 
+        ? current.filter((x) => x !== n) 
+        : [...current, n];
+      
+      // Clear error if at least one neighborhood is selected
+      if (newNeighborhoods.length > 0) {
+        setErrors(prev => ({
+          ...prev,
+          neighborhoods: ""
+        }));
+      }
+      
+      return newNeighborhoods;
+    });
+  };
+
+  // Toggle expand/collapse city in the UI
+  const toggleExpandCity = (city: string) => {
+    setExpandedCities(current => 
+      current.includes(city) 
+        ? current.filter(c => c !== city) 
+        : [...current, city]
     );
+  };
+
+  // Select all neighborhoods for a city
+  const selectAllNeighborhoods = (city: string, e?: React.SyntheticEvent) => {
+    // Stop event propagation to prevent toggling the dropdown (if event is provided)
+    if (e) {
+      e.stopPropagation();
+    }
+    
+    const cityNeighborhoods = CITIES_AND_NEIGHBORHOODS[city as keyof typeof CITIES_AND_NEIGHBORHOODS];
+    
+    setNeighborhoods(current => {
+      // Get all currently selected neighborhoods that are not from this city
+      const otherNeighborhoods = current.filter(n => !cityNeighborhoods.includes(n));
+      
+      // If all neighborhoods of the city are already selected, deselect them all
+      const allSelected = cityNeighborhoods.every(n => current.includes(n));
+      
+      if (allSelected) {
+        return otherNeighborhoods;
+      } else {
+        // Otherwise, select all neighborhoods from the city
+        return [...otherNeighborhoods, ...cityNeighborhoods];
+      }
+    });
+
+    // Clear neighborhood error if we're selecting neighborhoods
+    if (errors.neighborhoods) {
+      setErrors(prev => ({
+        ...prev,
+        neighborhoods: ""
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -350,32 +446,70 @@ function PrivateSubscriptionPage() {
                   </label>
                 </div>
 
-                {/* Neighborhoods */}
+                {/* Cities and Neighborhoods as dropdown */}
                 <div>
-                  <label className="block mb-1 font-medium">שכונות</label>
-                  <div className="flex flex-wrap gap-2">
-                    {NEIGHBORHOODS.map((n) => (
-                      <label key={n} className="flex items-center gap-1">
-                        <input
-                          type="checkbox"
-                          className="accent-primary"
-                          checked={neighborhoods.includes(n)}
-                          onChange={() => {
-                            setNeighborhoods((curr) =>
-                              curr.includes(n)
-                                ? curr.filter((x) => x !== n)
-                                : [...curr, n],
-                            );
-                            // Clear error when user makes a selection
-                            setErrors(prev => ({
-                              ...prev,
-                              neighborhoods: ""
-                            }));
-                          }}
-                        />
-                        <span>{n}</span>
-                      </label>
-                    ))}
+                  <label className="block mb-1 font-medium">ערים ושכונות</label>
+                  <div className="border rounded-md">
+                    {Object.keys(CITIES_AND_NEIGHBORHOODS).map((city) => {
+                      const cityNeighborhoods = CITIES_AND_NEIGHBORHOODS[city as keyof typeof CITIES_AND_NEIGHBORHOODS];
+                      const isExpanded = expandedCities.includes(city);
+                      const allNeighborhoodsSelected = cityNeighborhoods.every(n => neighborhoods.includes(n));
+                      const someNeighborhoodsSelected = cityNeighborhoods.some(n => neighborhoods.includes(n)) && !allNeighborhoodsSelected;
+                      
+                      return (
+                        <div key={city} className="border-b last:border-b-0">
+                          {/* City header - clicking it toggles expansion */}
+                          <div 
+                            className="flex items-center p-2 cursor-pointer hover:bg-gray-50" 
+                            onClick={() => toggleExpandCity(city)}
+                          >
+                            <div className="mr-2 p-1">
+                              {isExpanded ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-grow">
+                              {/* The checkbox only selects neighborhoods and prevents propagation */}
+                              <input
+                                type="checkbox"
+                                className="accent-primary"
+                                checked={allNeighborhoodsSelected}
+                                ref={el => {
+                                  if (el) {
+                                    // Use indeterminate state for partially selected cities
+                                    el.indeterminate = someNeighborhoodsSelected;
+                                  }
+                                }}
+                                onChange={(e) => selectAllNeighborhoods(city, e)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className="font-medium">{city}</span>
+                            </div>
+                          </div>
+                          
+                          {/* Neighborhood list - shown when expanded */}
+                          {isExpanded && (
+                            <div className="pl-8 pr-2 py-1 border-t bg-gray-50">
+                              <div className="flex flex-wrap gap-2 pb-1">
+                                {cityNeighborhoods.map((n) => (
+                                  <label key={n} className="flex items-center gap-1 min-w-[120px]">
+                                    <input
+                                      type="checkbox"
+                                      className="accent-primary"
+                                      checked={neighborhoods.includes(n)}
+                                      onChange={() => toggleNeighborhood(n)}
+                                    />
+                                    <span className="text-sm">{n}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                   {errors.neighborhoods && (
                     <div className="text-red-500 text-sm mt-1">{errors.neighborhoods}</div>
