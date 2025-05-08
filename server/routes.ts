@@ -7,6 +7,7 @@ import { z } from "zod";
 import sgMail from "@sendgrid/mail";
 import dotenv from 'dotenv';
 import { loadBaseHtml } from "./meta‑template";
+import { setupChatbotRoutes } from "./chatbot";
 
 dotenv.config();
 // Initialize SendGrid with API key from environment variables
@@ -19,6 +20,7 @@ if (SENDGRID_API_KEY) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
+  setupChatbotRoutes(app);
 
   // Listings routes
   app.get("/api/listings", async (req, res) => {
