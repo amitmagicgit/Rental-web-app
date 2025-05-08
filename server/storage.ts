@@ -23,7 +23,7 @@ export interface IStorage {
   updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User>;
   updateUserTelegramChat(userId: number, chatId: string): Promise<User>;
 
-  getListings(filters?: Partial<UserFilter>): Promise<Listing[]>;
+  getListings(filters?: Partial<UserFilter> & { limit?: number }): Promise<Listing[]>;
   getListingByPostId(postId: string): Promise<Listing | undefined>;
   saveUserListingView(telegramChatId: string, postId: string): Promise<void>;
   getListingViewsStats(): Promise<Array<{ date_created: string; telegram_chat_id: string; entry_count: number }>>;
@@ -115,7 +115,7 @@ export class DbStorage implements IStorage {
     return result.rows[0];
   }
 
-  async getListings(filters?: Partial<UserFilter>): Promise<Listing[]> {
+  async getListings(filters?: Partial<UserFilter> & { limit?: number }): Promise<Listing[]> {
     let query = "SELECT * FROM processed_posts";
     const params: any[] = [];
     const conditions: string[] = [];
@@ -211,7 +211,13 @@ export class DbStorage implements IStorage {
       query += " WHERE " + conditions.join(" AND ");
     }
 
-    query += " ORDER BY created_at DESC LIMIT 100";
+    query += " ORDER BY created_at DESC";
+    
+    // Add limit if specified, otherwise default to 100
+    // Enforce maximum limit of 100 records
+    const requestedLimit = filters?.limit || 100;
+    const limit = Math.min(requestedLimit, 100);
+    query += ` LIMIT ${limit}`;
 
     console.log(query, params);
     const result = await this.pool.query(query, params);

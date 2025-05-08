@@ -172,7 +172,7 @@ export default function SearchPage() {
         />
       <div className="container mx-auto p-4 pt-24">
         <h1 className="text-2xl md:text-3xl font-bold text-center mb-14 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-          דירות להשכרה בתל אביב
+          דירות להשכרה
         </h1>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

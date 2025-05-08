@@ -29,7 +29,6 @@ export const CITIES_AND_NEIGHBORHOODS: CityNeighborhoodMap = {
     "הצפון החדש",
     "בבלי",
     "נמל תל אביב",
-    "רמת אביב",
     "נווה אביבים",
     "רמת אביב",
     "רמת אביב ג",

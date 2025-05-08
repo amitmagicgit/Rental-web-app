@@ -44,9 +44,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       includeZeroPrice: query.includeZeroPrice === "false" ? false : true,
       includeZeroSize: query.includeZeroSize === "false" ? false : true,
       includeZeroRooms: query.includeZeroRooms === "false" ? false : true,
+      limit: 100 // Explicitly set limit to 100 for main search
     };
 
     const listings = await storage.getListings(filters);
+    res.json(listings);
+  });
+
+  // New endpoint for recent listings
+  app.get("/api/listings/recent", async (req, res) => {
+    const listings = await storage.getListings({ limit: 5 }); // Explicitly set limit to 5 for recent listings
     res.json(listings);
   });
 
@@ -320,7 +327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const ogImage = l.attachments?.[mainIdx] || "/logo.jpeg";
   
       // Build meta content
-      const title = `${l.neighborhood} • ${l.size} מ״ר • ₪${Number(l.price).toLocaleString()}`;
+      const title = `${l.neighborhood} • ${l.size} מ״ר • ₪${Number(l.price).toLocaleString()}`;
       const desc  = (l.description ?? "").slice(0, 120);
       const url   = `${process.env.APP_URL}/listing/${postId}`;
   
