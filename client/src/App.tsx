@@ -13,6 +13,7 @@ import PrivateSubscriptionPage from "@/pages/PrivateSubscriptionPage";
 import LandingPage from "@/pages/LandingPage";
 import Header from "@/components/layout/Header";
 import AdminDashboard from "./pages/AdminDashboard";
+import ChatTest from "./pages/ChatTest";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/LandingPage" component={LandingPage} />
       <Route path="/Admin" component={AdminDashboard} />
+      <Route path="/chat-test" component={ChatTest} />
 
       <ProtectedRoute path="/dashboard" component={UserDashboard} />
       <Route
