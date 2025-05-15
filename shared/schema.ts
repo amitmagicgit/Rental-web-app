@@ -40,7 +40,7 @@ export const CITIES_AND_NEIGHBORHOODS: CityNeighborhoodMap = {
   "רמת גן": [
     "תל בנימין",
     "חרוזים",
-    "שיכון ותיקים",
+    "שכונת הותיקים",
     "הגפן",
     "הבורסה",
     "הראשונים",
