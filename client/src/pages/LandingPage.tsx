@@ -150,10 +150,10 @@ export default function LandingPage() {
         className="h-screen snap-start snap-always flex items-center relative"
       >
         <NetworkAnimation
-          desktopHouses={8}
-          desktopPeople={7}
-          mobileHouses={6}
-          mobilePeople={5}
+          desktopHouses={6}
+          desktopPeople={5}
+          mobileHouses={4}
+          mobilePeople={3}
         />
         <div className="container mx-auto px-4 max-w-[1280px] w-[95%] pt-20 md:pt-0">
           <motion.div
