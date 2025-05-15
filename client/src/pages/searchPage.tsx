@@ -164,12 +164,12 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-background ">
-          <NetworkAnimation
+          {/* <NetworkAnimation
           desktopHouses={5}
           desktopPeople={4}
           mobileHouses={3}
           mobilePeople={2}
-        />
+        /> */}
       <div className="container mx-auto p-4 pt-24">
         <h1 className="text-2xl md:text-3xl font-bold text-center mb-14 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
           דירות להשכרה

@@ -12,6 +12,7 @@ import {
   Check,
   X,
   Clock,
+  Home,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NetworkAnimation } from "@/components/NetworkAnimation";
@@ -120,12 +121,12 @@ export default function ListingDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <NetworkAnimation
-        desktopHouses={5}
-        desktopPeople={5}
-        mobileHouses={4}
-        mobilePeople={3}
-      />
+      {/* <NetworkAnimation
+        desktopHouses={3}
+        desktopPeople={3}
+        mobileHouses={3}
+        mobilePeople={2}
+      /> */}
       <div className="container mx-auto p-12 pt-32 space-y-8">
         {/* Back Button */}
         <Button onClick={handleBack} className="mb-4">
@@ -147,8 +148,14 @@ export default function ListingDetail() {
             <div className="flex flex-wrap gap-4 pt-6 text-muted-foreground">
               <div className="flex items-center gap-1">
                 <MapPin className="h-5 w-5" />
-                <span>{listing.neighborhood}</span>
+                <span>{listing.city}, {listing.neighborhood}</span>
               </div>
+              {listing.address && (
+                <div className="flex items-center gap-1">
+                  <Home className="h-5 w-5" />
+                  <span>{listing.address}</span>
+                </div>
+              )}
               <div className="flex items-center gap-1">
                 <Ruler className="h-5 w-5" />
                 <span>
