@@ -10,7 +10,9 @@ import {
   UserFilter,
   InsertUserFilter,
 } from "@shared/schema";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+
+import { ChatbotStorage } from "./storage_chatbot";
 
 dotenv.config();
 
@@ -23,14 +25,32 @@ export interface IStorage {
   updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User>;
   updateUserTelegramChat(userId: number, chatId: string): Promise<User>;
 
-  getListings(filters?: Partial<UserFilter> & { limit?: number }): Promise<Listing[]>;
+  getListings(
+    filters?: Partial<UserFilter> & { limit?: number },
+  ): Promise<Listing[]>;
   getListingByPostId(postId: string): Promise<Listing | undefined>;
   saveUserListingView(telegramChatId: string, postId: string): Promise<void>;
-  getListingViewsStats(): Promise<Array<{ date_created: string; telegram_chat_id: string; entry_count: number }>>;
-  getSubscriptionStats(): Promise<Array<{ date_created: string; subscription_count: number }>>;
+  getListingViewsStats(): Promise<
+    Array<{
+      date_created: string;
+      telegram_chat_id: string;
+      entry_count: number;
+    }>
+  >;
+  getSubscriptionStats(): Promise<
+    Array<{ date_created: string; subscription_count: number }>
+  >;
   getTotalUsersCount(): Promise<number>;
-  getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>>;
-  getDailySentMessagesStats(): Promise<Array<{ date_sent: string; daily_sent: number }>>;
+  getDailyUserStats(): Promise<
+    Array<{
+      date_created: string;
+      daily_active_users: number;
+      daily_views_per_user: number;
+    }>
+  >;
+  getDailySentMessagesStats(): Promise<
+    Array<{ date_sent: string; daily_sent: number }>
+  >;
 
   getUserFilters(userId: number): Promise<UserFilter[]>;
   createUserFilter(
@@ -45,12 +65,15 @@ export interface IStorage {
 
   sessionStore: session.Store;
 
-  getSourcePlatformStats(): Promise<Array<{ date_in: string; source_platform: string; count: number }>>;
+  getSourcePlatformStats(): Promise<
+    Array<{ date_in: string; source_platform: string; count: number }>
+  >;
 }
 
 export class DbStorage implements IStorage {
   private pool: Pool;
   sessionStore: session.Store;
+  chatbot: ChatbotStorage;
 
   constructor() {
     // Use the DATABASE_URL environment variable for your connection string.
@@ -70,6 +93,7 @@ export class DbStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
     });
+    this.chatbot = new ChatbotStorage(this.pool);
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -115,7 +139,10 @@ export class DbStorage implements IStorage {
     return result.rows[0];
   }
 
-  async getListings(filters?: Partial<UserFilter> & { limit?: number }): Promise<Listing[]> {
+  async getListings(
+    filters?: Partial<UserFilter> & { limit?: number },
+  ): Promise<Listing[]> {
+    console.log("getListings called with filters:", filters);
     let query = "SELECT * FROM processed_posts";
     const params: any[] = [];
     const conditions: string[] = [];
@@ -212,7 +239,7 @@ export class DbStorage implements IStorage {
     }
 
     query += " ORDER BY created_at DESC";
-    
+
     // Add limit if specified, otherwise default to 100
     // Enforce maximum limit of 100 records
     const requestedLimit = filters?.limit || 100;
@@ -232,14 +259,23 @@ export class DbStorage implements IStorage {
     return result.rows[0];
   }
 
-  async saveUserListingView(telegramChatId: string, postId: string): Promise<void> {
+  async saveUserListingView(
+    telegramChatId: string,
+    postId: string,
+  ): Promise<void> {
     await this.pool.query(
       "INSERT INTO user_listing_entries (telegram_chat_id, post_id) VALUES ($1, $2)",
-      [telegramChatId, postId]
+      [telegramChatId, postId],
     );
   }
 
-  async getListingViewsStats(): Promise<Array<{ date_created: string; telegram_chat_id: string; entry_count: number }>> {
+  async getListingViewsStats(): Promise<
+    Array<{
+      date_created: string;
+      telegram_chat_id: string;
+      entry_count: number;
+    }>
+  > {
     const result = await this.pool.query(`
       SELECT 
         created_at::date AS date_created, 
@@ -258,7 +294,9 @@ export class DbStorage implements IStorage {
     return result.rows;
   }
 
-  async getSubscriptionStats(): Promise<Array<{ date_created: string; subscription_count: number }>> {
+  async getSubscriptionStats(): Promise<
+    Array<{ date_created: string; subscription_count: number }>
+  > {
     const result = await this.pool.query(`
       SELECT 
         created_at::date AS date_created, 
@@ -281,7 +319,13 @@ export class DbStorage implements IStorage {
     return parseInt(result.rows[0].count);
   }
 
-  async getDailyUserStats(): Promise<Array<{ date_created: string; daily_active_users: number; daily_views_per_user: number }>> {
+  async getDailyUserStats(): Promise<
+    Array<{
+      date_created: string;
+      daily_active_users: number;
+      daily_views_per_user: number;
+    }>
+  > {
     const result = await this.pool.query(`
       SELECT 
         created_at::date AS date_created,
@@ -299,7 +343,9 @@ export class DbStorage implements IStorage {
     return result.rows;
   }
 
-  async getDailySentMessagesStats(): Promise<Array<{ date_sent: string; daily_sent: number }>> {
+  async getDailySentMessagesStats(): Promise<
+    Array<{ date_sent: string; daily_sent: number }>
+  > {
     const result = await this.pool.query(`
       SELECT  
         sent_at::date AS date_sent, 
@@ -469,7 +515,9 @@ export class DbStorage implements IStorage {
     ]);
   }
 
-  async getSourcePlatformStats(): Promise<Array<{ date_in: string; source_platform: string; count: number }>> {
+  async getSourcePlatformStats(): Promise<
+    Array<{ date_in: string; source_platform: string; count: number }>
+  > {
     const result = await this.pool.query(`
       SELECT 
         created_at::date AS date_in, 

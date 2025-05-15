@@ -8,7 +8,7 @@ function standardizeListing(listing: Listing) {
     post_id: listing.post_id,
     price: listing.price,
     address: listing.address,
-    neighborhood: listing.neighborhood,
+    neighborhoods: listing.neighborhoods,
     num_rooms: listing.num_rooms,
     size: listing.size,
     agent: listing.agent,
@@ -20,7 +20,7 @@ function standardizeListing(listing: Listing) {
     created_at: listing.created_at,
     source_platform: listing.source_platform,
     city: listing.city,
-    url: `https://thefinder.co.il/listing/${listing.post_id}`
+    url: `https://thefinder.co.il/listing/${listing.post_id}`,
   };
 }
 
@@ -31,7 +31,7 @@ export function setupChatbotRoutes(app: Express) {
     try {
       const filters = {
         ...req.body,
-        limit: 5 // Always limit to 5 for recent listings
+        limit: 5, // Always limit to 5 for recent listings
       };
 
       const listings = await storage.getListings(filters);
@@ -48,9 +48,11 @@ export function setupChatbotRoutes(app: Express) {
   app.post("/api/chat/listing/by-id", async (req: Request, res: Response) => {
     try {
       const { postId } = req.body;
-      
+
       if (!postId) {
-        return res.status(400).json({ error: "Missing postId in request body" });
+        return res
+          .status(400)
+          .json({ error: "Missing postId in request body" });
       }
 
       const listing = await storage.getListingByPostId(postId);
@@ -66,4 +68,72 @@ export function setupChatbotRoutes(app: Express) {
       res.status(500).json({ error: "Failed to fetch listing" });
     }
   });
-} 
+
+  app.get("/api/whatsapp/private-subscription", async (req, res) => {
+    const { phone_number } = req.query;
+    if (!phone_number) {
+      return res.status(400).json({ error: "Missing phone_number or token" });
+    }
+    try {
+      // TODO – add token verification if you need it
+      const subscription = await storage.chatbot.getWhatsappSubscriptionByPhone(
+        phone_number as string,
+      );
+      if (!subscription) {
+        return res.status(404).json({ error: "Subscription not found" });
+      }
+      res.json(subscription);
+    } catch (err) {
+      console.error("Error fetching WhatsApp subscription:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post(
+    "/api/whatsapp/private-subscription",
+    async (req: Request, res: Response) => {
+      try {
+        const {
+          phoneNumber,
+          min_price,
+          max_price,
+          min_size,
+          max_size,
+          neighborhoods,
+          min_rooms,
+          max_rooms,
+          balcony,
+          agent,
+          parking,
+          furnished,
+          include_zero_price,
+          include_zero_size,
+          include_zero_rooms,
+        } = req.body;
+
+        const subscription = await storage.chatbot.upsertWhatsappSubscription({
+          phone_number: phoneNumber,
+          min_price: min_price,
+          max_price: max_price,
+          min_size: min_size,
+          max_size: max_size,
+          neighborhoods,
+          min_rooms: min_rooms,
+          max_rooms: max_rooms,
+          balcony,
+          agent,
+          parking,
+          furnished,
+          include_zero_price: include_zero_price,
+          include_zero_size: include_zero_size,
+          include_zero_rooms: include_zero_rooms,
+        });
+
+        res.json(subscription);
+      } catch (err) {
+        console.error("Error saving WhatsApp subscription:", err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    },
+  );
+}

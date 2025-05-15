@@ -36,43 +36,44 @@ export const CITIES_AND_NEIGHBORHOODS: CityNeighborhoodMap = {
     "הגוש הגדול",
     "שדה דב",
     "כוכב הצפון",
-
   ],
   "רמת גן": [
-    "תל בנימין", 
-    "חרוזים", 
-    "שיכון ותיקים", 
-    "הגפן", 
-    "הבורסה", 
+    "תל בנימין",
+    "חרוזים",
+    "שיכון ותיקים",
+    "הגפן",
+    "הבורסה",
     "הראשונים",
-    "יהלום", 
-    "חשמונאים", 
-    "בן גוריון", 
-    "נחלת גנים", 
+    "יהלום",
+    "חשמונאים",
+    "בן גוריון",
+    "נחלת גנים",
     "הלל",
     "יד לבנים",
     "תל יהודה",
     "קרית בורוכוב",
     "תל גנים",
-    "רמת חן", 
+    "רמת חן",
   ],
-  "גבעתיים": [
-    "סיטי", 
-    "בורוכוב", 
-    "קריית יוסף", 
+  גבעתיים: [
+    "סיטי",
+    "בורוכוב",
+    "קריית יוסף",
     "ארלוזורוב",
     "גבעת הרמבם",
-    "שכונת הפועלים", 
+    "שכונת הפועלים",
     "שטח 9",
     "חברת חשמל",
-    "תל גנים", 
+    "תל גנים",
     "פועלי הרכבת",
     "גבעת קוזלובסקי",
   ],
 } as const;
 
 // Flat array of all neighborhoods for backward compatibility
-export const NEIGHBORHOODS = Object.values(CITIES_AND_NEIGHBORHOODS).flat() as readonly string[];
+export const NEIGHBORHOODS = Object.values(
+  CITIES_AND_NEIGHBORHOODS,
+).flat() as readonly string[];
 
 export const FILTER_OPTIONS = {
   ANY: "any",
@@ -100,7 +101,7 @@ export const listings = pgTable("processed_posts", {
   address: text("address"),
   street: text("street"),
   house: text("house"),
-  neighborhood: text("neighborhood"),
+  neighborhoods: text("neighborhood"),
   city: text("city"),
   num_rooms: real("num_rooms"),
   size: real("size"),
