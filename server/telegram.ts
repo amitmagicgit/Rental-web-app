@@ -81,7 +81,8 @@ async function handleResume(chatId: number) {
 }
 
 async function handleFilters(chatId: number) {
-  const link = `${process.env.APP_URL}/dashboard/private-subscription?chat_id=${chatId}`;
+  const token = generateRandomToken();
+  const link = `${process.env.APP_URL}/dashboard/private-subscription?chat_id=${chatId}&token=${token}`;
   await sendTelegramMessage(chatId, `כאן משנים פילטרים:\n${link}`);
 }
 
