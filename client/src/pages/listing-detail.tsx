@@ -13,6 +13,7 @@ import {
   X,
   Clock,
   Home,
+  Share2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NetworkAnimation } from "@/components/NetworkAnimation";
@@ -137,12 +138,35 @@ export default function ListingDetail() {
           <div className="w-full md:w-1/2 flex flex-col space-y-4">
             {/* Title */}
             <h1 className="text-2xl font-bold">{listing.description}</h1>
-            {/* Price */}
-            <div className="text-3xl font-bold text-primary">
-              ₪
-              {Number(listing.price).toLocaleString(undefined, {
-                maximumFractionDigits: 0,
-              })}
+            {/* Price and Share Button */}
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-primary">
+                ₪
+                {Number(listing.price).toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </div>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="gap-2"
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: listing.description,
+                      text: `דירה להשכרה: ${listing.description} - ${listing.price}₪`,
+                      url: window.location.href
+                    }).catch(console.error);
+                  } else {
+                    // Fallback for browsers that don't support the Web Share API
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('הקישור הועתק ללוח');
+                  }
+                }}
+              >
+                <Share2 className="h-5 w-5" />
+                שתף דירה
+              </Button>
             </div>
             {/* Address, Size, Rooms, and Timing */}
             <div className="flex flex-wrap gap-4 pt-6 text-muted-foreground">
@@ -208,28 +232,30 @@ export default function ListingDetail() {
             <div className="flex justify-center">
               <Card className="w-full md:w-1/2 h-fit relative">
                 <CardContent className="p-6 flex flex-col">
-                  <Button className="w-full mb-4" asChild>
-                    <a
-                      href={listing.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      צפה במודעה המקורית
-                      {listing.source_platform === "facebook" ? (
-                        <img
-                          src="/facebook-logo.png"
-                          alt="Facebook Logo"
-                          className="w-8 h-8 rounded-full"
-                        />
-                      ) : listing.source_platform === "yad2" ? (
-                        <img
-                          src="/yad2-logo.jpg"
-                          alt="Yad2 Logo"
-                          className="w-8 h-8 rounded-full"
-                        />
-                      ) : null}
-                    </a>
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button className="w-full" asChild>
+                      <a
+                        href={listing.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        צפה במודעה המקורית
+                        {listing.source_platform === "facebook" ? (
+                          <img
+                            src="/facebook-logo.png"
+                            alt="Facebook Logo"
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : listing.source_platform === "yad2" ? (
+                          <img
+                            src="/yad2-logo.jpg"
+                            alt="Yad2 Logo"
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : null}
+                      </a>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
