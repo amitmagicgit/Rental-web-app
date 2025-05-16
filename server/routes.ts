@@ -5,9 +5,12 @@ import { storage } from "./storage";
 import { userFilterSchema } from "@shared/schema";
 import { z } from "zod";
 import sgMail from "@sendgrid/mail";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 import { loadBaseHtml } from "./meta‑template";
 import { setupChatbotRoutes } from "./chatbot";
+import { setupTelegramRoutes } from "./telegram";
+import { sendTelegramMessage } from "./utils/telegram";
+import { ensureBotCommands } from "./utils/telegram-setup";
 
 dotenv.config();
 // Initialize SendGrid with API key from environment variables
@@ -21,6 +24,9 @@ if (SENDGRID_API_KEY) {
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
   setupChatbotRoutes(app);
+  setupTelegramRoutes(app);
+
+  await ensureBotCommands().catch(console.error);
 
   // Listings routes
   app.get("/api/listings", async (req, res) => {
@@ -46,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       includeZeroPrice: query.includeZeroPrice === "false" ? false : true,
       includeZeroSize: query.includeZeroSize === "false" ? false : true,
       includeZeroRooms: query.includeZeroRooms === "false" ? false : true,
-      limit: 100 // Explicitly set limit to 100 for main search
+      limit: 100, // Explicitly set limit to 100 for main search
     };
 
     const listings = await storage.getListings(filters);
@@ -70,11 +76,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Save user listing view
   app.post("/api/user/listing-view", async (req, res) => {
     const { telegramChatId, postId } = req.body;
-    
+
     if (!telegramChatId || !postId) {
-      return res.status(400).json({ error: "Missing telegramChatId or postId" });
+      return res
+        .status(400)
+        .json({ error: "Missing telegramChatId or postId" });
     }
-    
+
     try {
       await storage.saveUserListingView(telegramChatId, postId);
       res.status(200).json({ success: true });
@@ -88,11 +96,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/login", async (req, res) => {
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD;
-    
+
     if (!adminPassword) {
       return res.status(500).json({ error: "Admin password not configured" });
     }
-    
+
     if (password === adminPassword) {
       res.status(200).json({ success: true });
     } else {
@@ -114,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalUsers,
         dailyUserStats,
         dailySentMessages,
-        sourcePlatformStats
+        sourcePlatformStats,
       });
     } catch (error) {
       console.error("Error fetching admin stats:", error);
@@ -322,50 +330,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const postId = req.params.postId;
       const l = await storage.getListingByPostId(postId);
-      if (!l) return next();       // unknown ID → let SPA handle 404
-  
+      if (!l) return next(); // unknown ID → let SPA handle 404
+
       // Pick the first visible photo
-      const mainIdx = (l.source_platform === "facebook" && l.attachments?.[1]) ? 1 : 0;
+      const mainIdx =
+        l.source_platform === "facebook" && l.attachments?.[1] ? 1 : 0;
       const ogImage = l.attachments?.[mainIdx] || "/logo.jpeg";
-  
+
       // Build meta content
       const title = `${l.neighborhood} • ${l.size} מ״ר • ₪${Number(l.price).toLocaleString()}`;
-      const desc  = (l.description ?? "").slice(0, 120);
-      const url   = `${process.env.APP_URL}/listing/${postId}`;
-  
+      const desc = (l.description ?? "").slice(0, 120);
+      const url = `${process.env.APP_URL}/listing/${postId}`;
+
       // Inject meta tags (simple string replace)
       let template = loadBaseHtml()
-      .replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
-      .replace(/<meta property="og:title".*?>/,
-               `<meta property="og:title" content="${title}"/>`)
-      .replace(/<meta property="og:description".*?>/,
-               `<meta property="og:description" content="${desc}"/>`)
-      .replace(/<meta property="og:image".*?>/,
-               `<meta property="og:image" content="${ogImage}"/>`)
-      .replace(/<meta property="og:url".*?>/,
-               `<meta property="og:url"  content="${url}"/>`)
-      .replace(/<meta name="twitter:title".*?>/,
-               `<meta name="twitter:title" content="${title}"/>`)
-      .replace(/<meta name="twitter:description".*?>/,
-               `<meta name="twitter:description" content="${desc}"/>`)
-      .replace(/<meta name="twitter:image".*?>/,
-               `<meta name="twitter:image" content="${ogImage}"/>`);
+        .replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
+        .replace(
+          /<meta property="og:title".*?>/,
+          `<meta property="og:title" content="${title}"/>`,
+        )
+        .replace(
+          /<meta property="og:description".*?>/,
+          `<meta property="og:description" content="${desc}"/>`,
+        )
+        .replace(
+          /<meta property="og:image".*?>/,
+          `<meta property="og:image" content="${ogImage}"/>`,
+        )
+        .replace(
+          /<meta property="og:url".*?>/,
+          `<meta property="og:url"  content="${url}"/>`,
+        )
+        .replace(
+          /<meta name="twitter:title".*?>/,
+          `<meta name="twitter:title" content="${title}"/>`,
+        )
+        .replace(
+          /<meta name="twitter:description".*?>/,
+          `<meta name="twitter:description" content="${desc}"/>`,
+        )
+        .replace(
+          /<meta name="twitter:image".*?>/,
+          `<meta name="twitter:image" content="${ogImage}"/>`,
+        );
 
-    /* --------------------------------------------------------
+      /* --------------------------------------------------------
        In dev the Vite dev‑server must inject the React refresh
        preamble and HMR client.  In prod (vite build) there is
        no vite instance, so we skip this step.
        -------------------------------------------------------- */
-    const vite = req.app.get("vite");          // undefined in prod
-    if (vite) {
-      template = template.replace(
-        'src="/src/main.tsx"',
-        `src="/src/main.tsx?v=${Date.now()}"`
-      );
-      template = await vite.transformIndexHtml(req.originalUrl, template);
-    }
+      const vite = req.app.get("vite"); // undefined in prod
+      if (vite) {
+        template = template.replace(
+          'src="/src/main.tsx"',
+          `src="/src/main.tsx?v=${Date.now()}"`,
+        );
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+      }
 
-    res.setHeader("Content-Type", "text/html").send(template);
+      res.setHeader("Content-Type", "text/html").send(template);
     } catch (e) {
       next(e);
     }
@@ -373,27 +396,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
-}
-
-/**
- * Helper: Sends a Telegram message to a specified chat.
- */
-async function sendTelegramMessage(chatId: number, text: string) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  if (!botToken) {
-    throw new Error("TELEGRAM_BOT_TOKEN not set in environment");
-  }
-
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text }),
-  });
-
-  if (!response.ok) {
-    console.error("Failed to send Telegram message", await response.text());
-  }
 }
 
 /**

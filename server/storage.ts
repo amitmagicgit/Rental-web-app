@@ -62,6 +62,7 @@ export interface IStorage {
     filter: Partial<InsertUserFilter>,
   ): Promise<UserFilter>;
   deleteUserFilter(filterId: number): Promise<void>;
+  setTelegramSubscriptionActive(chatId: number, active: boolean): Promise<void>;
 
   sessionStore: session.Store;
 
@@ -513,6 +514,19 @@ export class DbStorage implements IStorage {
     await this.pool.query("DELETE FROM telegram_subscriptions WHERE id = $1", [
       filterId,
     ]);
+  }
+
+  async setTelegramSubscriptionActive(chatId: number, active: boolean) {
+    await this.pool.query(
+      `
+      INSERT INTO telegram_subscriptions (chat_id, target_type, is_active)
+      VALUES ($1, 'user', $2)
+      ON CONFLICT (chat_id, target_type)
+      DO UPDATE SET is_active = EXCLUDED.is_active,
+                    updated_at = NOW();
+      `,
+      [chatId.toString(), active],
+    );
   }
 
   async getSourcePlatformStats(): Promise<
